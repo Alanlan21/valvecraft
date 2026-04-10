@@ -1,7 +1,11 @@
 import { useState, useCallback, useRef } from "react";
 import type { Note, Fingering, GameMode, AnswerResult } from "../types";
 import { fingeringMap } from "../data/fingeringMap";
-import { getNotesForMode, getRandomNote, calculateScore } from "../utils/noteUtils";
+import {
+  getNotesForMode,
+  getRandomNote,
+  calculateScore,
+} from "../utils/noteUtils";
 
 export interface GameEngineState {
   currentNote: Note | null;
@@ -78,9 +82,12 @@ export function useGameEngine() {
       const nextNote = getRandomNote(prev.notePool, prev.currentNote.id);
 
       // Schedule the timestamp update after state settles
-      setTimeout(() => {
-        noteAppearedAt.current = performance.now();
-      }, correct ? 0 : 1500); // delay next note timer if wrong (feedback display)
+      setTimeout(
+        () => {
+          noteAppearedAt.current = performance.now();
+        },
+        correct ? 0 : 1500,
+      ); // delay next note timer if wrong (feedback display)
 
       return {
         ...prev,

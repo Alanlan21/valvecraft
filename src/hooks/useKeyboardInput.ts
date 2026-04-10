@@ -18,14 +18,20 @@ const EMPTY_FINGERING: Fingering = {
  *
  * Prevents default browser behavior for Space and Shift during gameplay.
  */
-export function useKeyboardInput(active: boolean, onSubmit: (fingering: Fingering) => void) {
+export function useKeyboardInput(
+  active: boolean,
+  onSubmit: (fingering: Fingering) => void,
+) {
   const [currentInput, setCurrentInput] = useState<Fingering>(EMPTY_FINGERING);
   const inputRef = useRef<Fingering>(EMPTY_FINGERING);
   const onSubmitRef = useRef(onSubmit);
   onSubmitRef.current = onSubmit;
 
   const resetInput = useCallback(() => {
-    const empty = { valves: [false, false, false] as [boolean, boolean, boolean], slide: false };
+    const empty = {
+      valves: [false, false, false] as [boolean, boolean, boolean],
+      slide: false,
+    };
     inputRef.current = empty;
     setCurrentInput(empty);
   }, []);
@@ -41,16 +47,28 @@ export function useKeyboardInput(active: boolean, onSubmit: (fingering: Fingerin
 
       switch (key.toLowerCase()) {
         case "q":
-          if (valves[0] !== pressed) { valves[0] = pressed; changed = true; }
+          if (valves[0] !== pressed) {
+            valves[0] = pressed;
+            changed = true;
+          }
           break;
         case "w":
-          if (valves[1] !== pressed) { valves[1] = pressed; changed = true; }
+          if (valves[1] !== pressed) {
+            valves[1] = pressed;
+            changed = true;
+          }
           break;
         case "e":
-          if (valves[2] !== pressed) { valves[2] = pressed; changed = true; }
+          if (valves[2] !== pressed) {
+            valves[2] = pressed;
+            changed = true;
+          }
           break;
         case "shift":
-          if (slide !== pressed) { slide = pressed; changed = true; }
+          if (slide !== pressed) {
+            slide = pressed;
+            changed = true;
+          }
           break;
       }
 
@@ -71,7 +89,10 @@ export function useKeyboardInput(active: boolean, onSubmit: (fingering: Fingerin
 
       if (e.key === " ") {
         // Submit current fingering on Space
-        onSubmitRef.current({ ...inputRef.current, valves: [...inputRef.current.valves] });
+        onSubmitRef.current({
+          ...inputRef.current,
+          valves: [...inputRef.current.valves],
+        });
         return;
       }
 

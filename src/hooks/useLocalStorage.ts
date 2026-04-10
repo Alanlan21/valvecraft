@@ -4,7 +4,10 @@ import { useState, useCallback } from "react";
  * Generic hook for persisting state in localStorage.
  * Falls back to defaultValue if localStorage is unavailable or data is corrupted.
  */
-export function useLocalStorage<T>(key: string, defaultValue: T): [T, (value: T | ((prev: T) => T)) => void] {
+export function useLocalStorage<T>(
+  key: string,
+  defaultValue: T,
+): [T, (value: T | ((prev: T) => T)) => void] {
   const [stored, setStored] = useState<T>(() => {
     try {
       const item = localStorage.getItem(key);

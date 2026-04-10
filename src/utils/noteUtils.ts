@@ -2,7 +2,10 @@ import type { Note, GameMode } from "../types";
 import { allNotes } from "../data/fingeringMap";
 
 /** Range boundaries per difficulty level (by octave boundaries) */
-const RANGE_BOUNDS: Record<GameMode["rangeLevel"], { min: string; max: string }> = {
+const RANGE_BOUNDS: Record<
+  GameMode["rangeLevel"],
+  { min: string; max: string }
+> = {
   beginner: { min: "C4", max: "G4" },
   intermediate: { min: "G3", max: "C5" },
   advanced: { min: "G3", max: "G5" },
@@ -64,7 +67,11 @@ export function getRandomNote(notes: Note[], previousId?: string): Note {
  * - Streak multiplier: 1 + (streak * 0.1) → 10% bonus per consecutive hit
  * - Wrong answer: 0 points, streak resets
  */
-export function calculateScore(timeMs: number, streak: number, correct: boolean): number {
+export function calculateScore(
+  timeMs: number,
+  streak: number,
+  correct: boolean,
+): number {
   if (!correct) return 0;
   const base = Math.max(0, 3000 - timeMs);
   const multiplier = 1 + streak * 0.1;
