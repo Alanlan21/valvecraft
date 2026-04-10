@@ -64,7 +64,11 @@ export function GameScreen({ mode, onExit }: GameScreenProps) {
       <div className="mt-4">
         <ValveIndicator
           currentInput={currentInput}
-          expected={engine.lastResult && !engine.lastResult.correct ? engine.lastResult.expected : null}
+          expected={
+            engine.lastResult && !engine.lastResult.correct
+              ? engine.lastResult.expected
+              : null
+          }
           showExpected={!!engine.lastResult && !engine.lastResult.correct}
         />
       </div>

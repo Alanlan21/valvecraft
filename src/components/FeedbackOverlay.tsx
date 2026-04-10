@@ -49,9 +49,10 @@ export function FeedbackOverlay({ result, onDismiss }: FeedbackOverlayProps) {
       <div
         className={`
           mb-4 rounded-full px-4 py-1 text-sm font-bold
-          ${result.correct
-            ? "bg-green-500/20 text-green-400"
-            : "bg-red-500/20 text-red-400"
+          ${
+            result.correct
+              ? "bg-green-500/20 text-green-400"
+              : "bg-red-500/20 text-red-400"
           }
         `}
       >
@@ -74,9 +75,7 @@ export function FeedbackOverlay({ result, onDismiss }: FeedbackOverlayProps) {
           <span className="text-sm font-semibold text-[#fffff0]/70">
             Digitação correta para {result.note.id}:
           </span>
-          <ValveIndicator
-            currentInput={result.expected}
-          />
+          <ValveIndicator currentInput={result.expected} />
         </div>
       )}
     </div>

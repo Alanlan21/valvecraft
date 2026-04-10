@@ -50,9 +50,10 @@ export function ModeSelector({ onStart }: ModeSelectorProps) {
               onClick={() => setRangeLevel(opt.value)}
               className={`
                 rounded-lg border-2 px-3 py-3 text-left transition-all
-                ${rangeLevel === opt.value
-                  ? "border-[#d4a853] bg-[#d4a853]/10 text-[#d4a853]"
-                  : "border-[#cd7f32]/20 bg-[#16213e] text-[#fffff0]/60 hover:border-[#cd7f32]/40"
+                ${
+                  rangeLevel === opt.value
+                    ? "border-[#d4a853] bg-[#d4a853]/10 text-[#d4a853]"
+                    : "border-[#cd7f32]/20 bg-[#16213e] text-[#fffff0]/60 hover:border-[#cd7f32]/40"
                 }
               `}
             >
@@ -75,9 +76,10 @@ export function ModeSelector({ onStart }: ModeSelectorProps) {
               onClick={() => setNoteType(opt.value)}
               className={`
                 rounded-lg border-2 px-3 py-3 text-left transition-all
-                ${noteType === opt.value
-                  ? "border-[#d4a853] bg-[#d4a853]/10 text-[#d4a853]"
-                  : "border-[#cd7f32]/20 bg-[#16213e] text-[#fffff0]/60 hover:border-[#cd7f32]/40"
+                ${
+                  noteType === opt.value
+                    ? "border-[#d4a853] bg-[#d4a853]/10 text-[#d4a853]"
+                    : "border-[#cd7f32]/20 bg-[#16213e] text-[#fffff0]/60 hover:border-[#cd7f32]/40"
                 }
               `}
             >
@@ -112,19 +114,34 @@ export function ModeSelector({ onStart }: ModeSelectorProps) {
         </h3>
         <div className="grid grid-cols-2 gap-2 text-sm text-[#fffff0]/60">
           <div>
-            <kbd className="rounded bg-[#1a1a2e] px-2 py-0.5 font-mono text-[#d4a853]">Q</kbd> Válvula 1
+            <kbd className="rounded bg-[#1a1a2e] px-2 py-0.5 font-mono text-[#d4a853]">
+              Q
+            </kbd>{" "}
+            Válvula 1
           </div>
           <div>
-            <kbd className="rounded bg-[#1a1a2e] px-2 py-0.5 font-mono text-[#d4a853]">W</kbd> Válvula 2
+            <kbd className="rounded bg-[#1a1a2e] px-2 py-0.5 font-mono text-[#d4a853]">
+              W
+            </kbd>{" "}
+            Válvula 2
           </div>
           <div>
-            <kbd className="rounded bg-[#1a1a2e] px-2 py-0.5 font-mono text-[#d4a853]">E</kbd> Válvula 3
+            <kbd className="rounded bg-[#1a1a2e] px-2 py-0.5 font-mono text-[#d4a853]">
+              E
+            </kbd>{" "}
+            Válvula 3
           </div>
           <div>
-            <kbd className="rounded bg-[#1a1a2e] px-2 py-0.5 font-mono text-[#d4a853]">⇧</kbd> Slide
+            <kbd className="rounded bg-[#1a1a2e] px-2 py-0.5 font-mono text-[#d4a853]">
+              ⇧
+            </kbd>{" "}
+            Slide
           </div>
           <div className="col-span-2">
-            <kbd className="rounded bg-[#1a1a2e] px-2 py-0.5 font-mono text-[#d4a853]">Espaço</kbd> Confirmar resposta
+            <kbd className="rounded bg-[#1a1a2e] px-2 py-0.5 font-mono text-[#d4a853]">
+              Espaço
+            </kbd>{" "}
+            Confirmar resposta
           </div>
         </div>
       </div>
@@ -135,9 +152,10 @@ export function ModeSelector({ onStart }: ModeSelectorProps) {
         disabled={previewNotes.length === 0}
         className={`
           w-full rounded-xl py-4 text-lg font-black uppercase tracking-wider transition-all
-          ${previewNotes.length > 0
-            ? "bg-[#d4a853] text-[#1a1a2e] shadow-lg shadow-[#d4a853]/20 hover:bg-[#e0b86a] hover:shadow-[#d4a853]/40 active:scale-[0.98]"
-            : "cursor-not-allowed bg-[#2a2a4a] text-[#fffff0]/30"
+          ${
+            previewNotes.length > 0
+              ? "bg-[#d4a853] text-[#1a1a2e] shadow-lg shadow-[#d4a853]/20 hover:bg-[#e0b86a] hover:shadow-[#d4a853]/40 active:scale-[0.98]"
+              : "cursor-not-allowed bg-[#2a2a4a] text-[#fffff0]/30"
           }
         `}
       >
