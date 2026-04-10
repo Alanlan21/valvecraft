@@ -1,1 +1,28 @@
 @import "tailwindcss";
+
+/* Base theme */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #1a1a2e;
+  color: #fffff0;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Prevent text selection during gameplay */
+.select-none {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Keyboard focus styles */
+kbd {
+  font-family: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+}

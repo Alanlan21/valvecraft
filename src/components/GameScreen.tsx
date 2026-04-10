@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import type { GameMode } from "../types";
 import { useGameEngine } from "../hooks/useGameEngine";
 import { useKeyboardInput } from "../hooks/useKeyboardInput";
@@ -10,9 +10,10 @@ import { ScoreBoard } from "./ScoreBoard";
 interface GameScreenProps {
   mode: GameMode;
   onExit: () => void;
+  onScoreUpdate?: (score: number, streak: number) => void;
 }
 
-export function GameScreen({ mode, onExit }: GameScreenProps) {
+export function GameScreen({ mode, onExit, onScoreUpdate }: GameScreenProps) {
   const engine = useGameEngine();
 
   const handleSubmit = useCallback(
@@ -23,6 +24,13 @@ export function GameScreen({ mode, onExit }: GameScreenProps) {
   );
 
   const { currentInput } = useKeyboardInput(engine.gameActive, handleSubmit);
+
+  // Persist high scores
+  const onScoreUpdateRef = useRef(onScoreUpdate);
+  onScoreUpdateRef.current = onScoreUpdate;
+  useEffect(() => {
+    onScoreUpdateRef.current?.(engine.score, engine.bestStreak);
+  }, [engine.score, engine.bestStreak]);
 
   // Start game on mount
   if (!engine.gameActive && !engine.currentNote) {
