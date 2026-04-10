@@ -16,11 +16,13 @@ interface GameScreenProps {
 export function GameScreen({ mode, onExit, onScoreUpdate }: GameScreenProps) {
   const engine = useGameEngine();
 
+  // Guard: block submissions while feedback is showing
   const handleSubmit = useCallback(
     (fingering: Parameters<typeof engine.submitAnswer>[0]) => {
+      if (engine.lastResult) return;
       engine.submitAnswer(fingering);
     },
-    [engine.submitAnswer],
+    [engine.submitAnswer, engine.lastResult],
   );
 
   const { currentInput } = useKeyboardInput(engine.gameActive, handleSubmit);
@@ -33,12 +35,25 @@ export function GameScreen({ mode, onExit, onScoreUpdate }: GameScreenProps) {
   }, [engine.score, engine.bestStreak]);
 
   // Start game on mount
-  if (!engine.gameActive && !engine.currentNote) {
-    engine.startGame(mode);
-  }
+  const startedRef = useRef(false);
+  useEffect(() => {
+    if (!startedRef.current) {
+      startedRef.current = true;
+      engine.startGame(mode);
+    }
+  }, [mode, engine.startGame]);
+
+  // Escape key to exit
+  useEffect(() => {
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === "Escape") onExit();
+    }
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [onExit]);
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center gap-6 px-4 py-6">
+    <div className="relative flex min-h-screen select-none flex-col items-center gap-6 px-4 py-6">
       {/* Top bar: score + exit */}
       <div className="flex w-full max-w-2xl items-center justify-between">
         <ScoreBoard
