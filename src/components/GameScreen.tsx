@@ -180,9 +180,7 @@ export function GameScreen({
           controlBindings={controlBindings}
           currentInput={currentInput}
           expected={
-            lastResult && !lastResult.correct
-              ? lastResult.expected
-              : null
+            lastResult && !lastResult.correct ? lastResult.expected : null
           }
           showExpected={!!lastResult && !lastResult.correct}
         />
