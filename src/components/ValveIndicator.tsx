@@ -1,14 +1,20 @@
-import type { Fingering } from "../types";
+import type { ControlAction, ControlBindings, Fingering } from "../types";
 
 interface ValveIndicatorProps {
+  controlBindings: ControlBindings;
   currentInput: Fingering;
   expected?: Fingering | null;
   showExpected?: boolean;
 }
 
-const VALVE_LABELS = ["1 (Q)", "2 (W)", "3 (E)"];
+const VALVES: { action: ControlAction; index: 0 | 1 | 2; label: string }[] = [
+  { action: "valve1", index: 0, label: "1" },
+  { action: "valve2", index: 1, label: "2" },
+  { action: "valve3", index: 2, label: "3" },
+];
 
 export function ValveIndicator({
+  controlBindings,
   currentInput,
   expected,
   showExpected,
@@ -17,12 +23,12 @@ export function ValveIndicator({
     <div className="flex items-end gap-6">
       {/* Valves */}
       <div className="flex gap-3">
-        {VALVE_LABELS.map((label, i) => {
-          const pressed = currentInput.valves[i];
-          const isExpected = showExpected && expected?.valves[i];
+        {VALVES.map((valve) => {
+          const pressed = currentInput.valves[valve.index];
+          const isExpected = showExpected && expected?.valves[valve.index];
 
           return (
-            <div key={label} className="flex flex-col items-center gap-2">
+            <div key={valve.action} className="flex flex-col items-center gap-2">
               {/* Valve cap */}
               <div
                 className={`
@@ -52,7 +58,7 @@ export function ValveIndicator({
               />
               {/* Label */}
               <span className="text-xs font-mono text-[#cd7f32]/70">
-                {label}
+                {valve.label} ({controlBindings[valve.action].label})
               </span>
             </div>
           );
@@ -63,7 +69,7 @@ export function ValveIndicator({
       <div className="flex flex-col items-center gap-2">
         <div
           className={`
-            flex h-8 w-16 items-center justify-center rounded-md border-2 
+            flex h-8 w-16 items-center justify-center rounded-md border-2
             text-xs font-bold transition-all duration-75
             ${
               currentInput.slide
@@ -89,7 +95,9 @@ export function ValveIndicator({
             }
           `}
         />
-        <span className="text-xs font-mono text-[#cd7f32]/70">⇧ Shift</span>
+        <span className="text-xs font-mono text-[#cd7f32]/70">
+          {controlBindings.slide.label}
+        </span>
       </div>
     </div>
   );

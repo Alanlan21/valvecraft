@@ -1,5 +1,6 @@
-import type { Note, GameMode } from "../types";
-import { allNotes } from "../data/fingeringMap";
+import type { Note, GameMode, Fingering } from "../types";
+import { allNotes, fingeringMap } from "../data/fingeringMap";
+import { getStreakTier } from "./gameRules";
 
 /** Range boundaries per difficulty level (by octave boundaries) */
 const RANGE_BOUNDS: Record<
@@ -62,6 +63,39 @@ export function getRandomNote(notes: Note[], previousId?: string): Note {
 }
 
 /**
+ * Reverse lookup: given a Fingering, find the note id whose valves match,
+ * preferring the one closest in octave to `nearOctave`.
+ * Ignores slide — same valves with/without slide still names the same pitch.
+ * Returns null if no match found.
+ */
+export function fingeringToNoteId(
+  fingering: Fingering,
+  nearOctave: number,
+): string | null {
+  const matches = Object.entries(fingeringMap)
+    .filter(
+      ([, f]) =>
+        f.valves[0] === fingering.valves[0] &&
+        f.valves[1] === fingering.valves[1] &&
+        f.valves[2] === fingering.valves[2],
+    )
+    .map(([id]) => ({
+      id,
+      octave: parseInt(id[id.length - 1]),
+    }))
+    // Deduplicate enharmonics (same id prefix, same octave)
+    .filter((a, idx, arr) => arr.findIndex((b) => b.id === a.id) === idx);
+
+  if (matches.length === 0) return null;
+
+  // Pick the match closest in octave to the current note
+  matches.sort(
+    (a, b) => Math.abs(a.octave - nearOctave) - Math.abs(b.octave - nearOctave),
+  );
+  return matches[0].id;
+}
+
+/**
  * Calculate score for a single answer.
  * - Base: max(0, 3000 - timeMs) → faster = more points (cap at 3s)
  * - Streak multiplier: 1 + (streak * 0.1) → 10% bonus per consecutive hit
@@ -73,7 +107,8 @@ export function calculateScore(
   correct: boolean,
 ): number {
   if (!correct) return 0;
-  const base = Math.max(0, 3000 - timeMs);
-  const multiplier = 1 + streak * 0.1;
+  const tier = getStreakTier(streak);
+  const base = Math.max(0, tier.scoreWindowMs - timeMs);
+  const multiplier = (1 + streak * tier.streakBonus) * tier.tierMultiplier;
   return Math.round(base * multiplier);
 }

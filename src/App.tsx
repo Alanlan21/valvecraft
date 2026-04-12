@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { GameMode, GameScreen } from "./types";
+import { useControlBindings } from "./hooks/useControlBindings";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 import { ModeSelector } from "./components/ModeSelector";
 import { GameScreen as GameView } from "./components/GameScreen";
@@ -12,6 +13,11 @@ function App() {
     "valvecraft:bestStreak",
     0,
   );
+  const {
+    bindings: controlBindings,
+    setBindings: setControlBindings,
+    resetBindings: resetControlBindings,
+  } = useControlBindings();
 
   function handleStart(selectedMode: GameMode) {
     setMode(selectedMode);
@@ -27,7 +33,12 @@ function App() {
     <div className="min-h-screen bg-[#1a1a2e] text-[#fffff0]">
       {screen === "menu" && (
         <div className="flex min-h-screen flex-col items-center justify-center px-4 py-8">
-          <ModeSelector onStart={handleStart} />
+          <ModeSelector
+            controlBindings={controlBindings}
+            onControlBindingsChange={setControlBindings}
+            onControlBindingsReset={resetControlBindings}
+            onStart={handleStart}
+          />
 
           {/* Persistent stats */}
           {(highScore > 0 || bestStreak > 0) && (
@@ -51,6 +62,7 @@ function App() {
 
       {screen === "game" && mode && (
         <GameView
+          controlBindings={controlBindings}
           mode={mode}
           onExit={handleExit}
           onScoreUpdate={(score, streak) => {

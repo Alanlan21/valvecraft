@@ -1,13 +1,23 @@
 import { useEffect, useState } from "react";
-import type { AnswerResult } from "../types";
+import type { AnswerResult, ControlBindings } from "../types";
+import {
+  CORRECT_FEEDBACK_MS,
+  WRONG_ANSWER_TIME_PENALTY_MS,
+  WRONG_FEEDBACK_MS,
+} from "../utils/gameRules";
 import { ValveIndicator } from "./ValveIndicator";
 
 interface FeedbackOverlayProps {
+  controlBindings: ControlBindings;
   result: AnswerResult | null;
   onDismiss: () => void;
 }
 
-export function FeedbackOverlay({ result, onDismiss }: FeedbackOverlayProps) {
+export function FeedbackOverlay({
+  controlBindings,
+  result,
+  onDismiss,
+}: FeedbackOverlayProps) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -18,21 +28,14 @@ export function FeedbackOverlay({ result, onDismiss }: FeedbackOverlayProps) {
 
     setVisible(true);
 
-    if (result.correct) {
-      // Auto-dismiss correct answers quickly
-      const timer = setTimeout(() => {
+    const timer = setTimeout(
+      () => {
         setVisible(false);
         onDismiss();
-      }, 400);
-      return () => clearTimeout(timer);
-    } else {
-      // Show wrong answer feedback longer
-      const timer = setTimeout(() => {
-        setVisible(false);
-        onDismiss();
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
+      },
+      result.correct ? CORRECT_FEEDBACK_MS : WRONG_FEEDBACK_MS,
+    );
+    return () => clearTimeout(timer);
   }, [result, onDismiss]);
 
   if (!result || !visible) return null;
@@ -57,6 +60,11 @@ export function FeedbackOverlay({ result, onDismiss }: FeedbackOverlayProps) {
         `}
       >
         {result.timeMs}ms
+        {!result.correct && (
+          <span className="ml-2 text-red-300">
+            -{WRONG_ANSWER_TIME_PENALTY_MS / 1000}s
+          </span>
+        )}
       </div>
 
       {/* Correct / Wrong indicator */}
@@ -75,7 +83,10 @@ export function FeedbackOverlay({ result, onDismiss }: FeedbackOverlayProps) {
           <span className="text-sm font-semibold text-[#fffff0]/70">
             Digitação correta para {result.note.id}:
           </span>
-          <ValveIndicator currentInput={result.expected} />
+          <ValveIndicator
+            controlBindings={controlBindings}
+            currentInput={result.expected}
+          />
         </div>
       )}
     </div>

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import type { Fingering } from "../types";
+import type { ControlAction, ControlBindings, Fingering } from "../types";
+import { getActionForKeyboardEvent } from "../utils/controlBindings";
 
 const EMPTY_FINGERING: Fingering = {
   valves: [false, false, false],
@@ -8,19 +9,11 @@ const EMPTY_FINGERING: Fingering = {
 
 /**
  * Hook that tracks simultaneous key presses for trumpet valve input.
- *
- * Key mapping:
- *   Q → valve 1
- *   W → valve 2
- *   E → valve 3
- *   Shift → 3rd valve slide
- *   Space → submit answer
- *
- * Prevents default browser behavior for Space and Shift during gameplay.
  */
 export function useKeyboardInput(
   active: boolean,
   onSubmit: (fingering: Fingering) => void,
+  controlBindings: ControlBindings,
 ) {
   const [currentInput, setCurrentInput] = useState<Fingering>(EMPTY_FINGERING);
   const inputRef = useRef<Fingering>(EMPTY_FINGERING);
@@ -39,36 +32,38 @@ export function useKeyboardInput(
   useEffect(() => {
     if (!active) return;
 
-    function updateFingering(key: string, pressed: boolean) {
+    function updateFingering(action: ControlAction, pressed: boolean) {
       const prev = inputRef.current;
       let changed = false;
       const valves: [boolean, boolean, boolean] = [...prev.valves];
       let slide = prev.slide;
 
-      switch (key.toLowerCase()) {
-        case "q":
+      switch (action) {
+        case "valve1":
           if (valves[0] !== pressed) {
             valves[0] = pressed;
             changed = true;
           }
           break;
-        case "w":
+        case "valve2":
           if (valves[1] !== pressed) {
             valves[1] = pressed;
             changed = true;
           }
           break;
-        case "e":
+        case "valve3":
           if (valves[2] !== pressed) {
             valves[2] = pressed;
             changed = true;
           }
           break;
-        case "shift":
+        case "slide":
           if (slide !== pressed) {
             slide = pressed;
             changed = true;
           }
+          break;
+        case "submit":
           break;
       }
 
@@ -80,15 +75,15 @@ export function useKeyboardInput(
     }
 
     function handleKeyDown(e: KeyboardEvent) {
+      const action = getActionForKeyboardEvent(controlBindings, e);
+
+      if (!action) return;
+
+      e.preventDefault();
+
       if (e.repeat) return;
 
-      // Prevent browser defaults for game keys
-      if (e.key === " " || e.key === "Shift") {
-        e.preventDefault();
-      }
-
-      if (e.key === " ") {
-        // Submit current fingering on Space
+      if (action === "submit") {
         onSubmitRef.current({
           ...inputRef.current,
           valves: [...inputRef.current.valves],
@@ -96,14 +91,19 @@ export function useKeyboardInput(
         return;
       }
 
-      updateFingering(e.key, true);
+      updateFingering(action, true);
     }
 
     function handleKeyUp(e: KeyboardEvent) {
-      if (e.key === " " || e.key === "Shift") {
-        e.preventDefault();
+      const action = getActionForKeyboardEvent(controlBindings, e);
+
+      if (!action) return;
+
+      e.preventDefault();
+
+      if (action !== "submit") {
+        updateFingering(action, false);
       }
-      updateFingering(e.key, false);
     }
 
     window.addEventListener("keydown", handleKeyDown);
@@ -113,7 +113,7 @@ export function useKeyboardInput(
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [active]);
+  }, [active, controlBindings]);
 
   return { currentInput, resetInput };
 }

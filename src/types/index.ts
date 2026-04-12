@@ -17,10 +17,20 @@ export interface Fingering {
 
 export type RangeLevel = "beginner" | "intermediate" | "advanced";
 export type NoteType = "natural" | "flat" | "sharp" | "chromatic";
+export type TrumpetType = "Bb" | "C";
+export type ControlAction = "valve1" | "valve2" | "valve3" | "slide" | "submit";
+
+export interface KeyBinding {
+  code: string;
+  label: string;
+}
+
+export type ControlBindings = Record<ControlAction, KeyBinding>;
 
 export interface GameMode {
   rangeLevel: RangeLevel;
   noteType: NoteType;
+  trumpetType: TrumpetType;
 }
 
 export interface AnswerResult {
