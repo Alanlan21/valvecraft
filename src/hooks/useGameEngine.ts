@@ -5,6 +5,8 @@ import {
   getNotesForMode,
   getRandomNote,
   calculateScore,
+  classifyAnswerQuality,
+  calcTimeGain,
 } from "../utils/noteUtils";
 import {
   CORRECT_FEEDBACK_MS,
@@ -52,6 +54,7 @@ export function useGameEngine() {
   const [state, setState] = useState<GameEngineState>(INITIAL_STATE);
   const noteAppearedAt = useRef<number>(0);
   const timerTickAt = useRef<number>(0);
+  const runStartAt = useRef<number>(0);
   const noteTimer = useRef<number | null>(null);
 
   const clearNoteTimer = useCallback(() => {
@@ -124,6 +127,7 @@ export function useGameEngine() {
       clearNoteTimer();
       noteAppearedAt.current = performance.now();
       timerTickAt.current = performance.now();
+      runStartAt.current = performance.now();
 
       setState({
         ...INITIAL_STATE,
@@ -152,12 +156,16 @@ export function useGameEngine() {
           given.valves[2] === expected.valves[2] &&
           given.slide === expected.slide;
 
+        const quality = correct ? classifyAnswerQuality(timeMs) : "ok";
+        const elapsedRunMs = performance.now() - runStartAt.current;
+        const timeGainMs = correct ? calcTimeGain(quality, elapsedRunMs) : 0;
+
         const newStreak = correct ? prev.streak + 1 : 0;
         const points = calculateScore(timeMs, prev.streak, correct);
         const newBestStreak = Math.max(prev.bestStreak, newStreak);
         const nextNote = getRandomNote(prev.notePool, prev.currentNote.id);
         const timeLeftMs = correct
-          ? prev.timeLeftMs
+          ? prev.timeLeftMs + timeGainMs
           : Math.max(0, prev.timeLeftMs - WRONG_ANSWER_TIME_PENALTY_MS);
         const gameOver = timeLeftMs <= 0;
 
@@ -167,6 +175,8 @@ export function useGameEngine() {
           given,
           timeMs,
           note: prev.currentNote,
+          quality,
+          timeGainMs,
         };
 
         if (!gameOver) {

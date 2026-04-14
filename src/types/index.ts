@@ -34,12 +34,19 @@ export interface GameMode {
   trumpetType: TrumpetType;
 }
 
+/** Quality band assigned to a correct answer based on response time. */
+export type AnswerQuality = "perfect" | "good" | "ok";
+
 export interface AnswerResult {
   correct: boolean;
   expected: Fingering;
   given: Fingering;
   timeMs: number;
   note: Note;
+  /** Quality of the answer (only meaningful when correct === true). */
+  quality: AnswerQuality;
+  /** Milliseconds added to the run clock by this answer (0 on wrong/ok). */
+  timeGainMs: number;
 }
 
 export type GameScreen = "menu" | "game" | "result";

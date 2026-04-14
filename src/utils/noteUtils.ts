@@ -1,6 +1,13 @@
-import type { Note, GameMode, Fingering } from "../types";
+import type { Note, GameMode, Fingering, AnswerQuality } from "../types";
 import { allNotes, fingeringMap } from "../data/fingeringMap";
-import { getStreakTier } from "./gameRules";
+import {
+  getStreakTier,
+  GOOD_THRESHOLD_MS,
+  PERFECT_THRESHOLD_MS,
+  TIME_GAIN_DECAY_EXPONENT,
+  TIME_GAIN_GOOD_MS,
+  TIME_GAIN_PERFECT_MS,
+} from "./gameRules";
 
 /** Range boundaries per difficulty level (by octave boundaries) */
 const RANGE_BOUNDS: Record<
@@ -111,4 +118,43 @@ export function calculateScore(
   const base = Math.max(0, tier.scoreWindowMs - timeMs);
   const multiplier = (1 + streak * tier.streakBonus) * tier.tierMultiplier;
   return Math.round(base * multiplier);
+}
+
+/**
+ * Classify a correct answer into a quality band based on response time.
+ */
+export function classifyAnswerQuality(timeMs: number): AnswerQuality {
+  if (timeMs <= PERFECT_THRESHOLD_MS) return "perfect";
+  if (timeMs <= GOOD_THRESHOLD_MS) return "good";
+  return "ok";
+}
+
+/**
+ * Calculate how many milliseconds to add to the run clock for a correct answer.
+ * Uses continuous diminishing returns so the gain asymptotically approaches 0
+ * as the run progresses. Formula:
+ *   gain = baseGain × (1 / (1 + elapsedMs / RUN_DURATION_MS)) ^ DECAY_EXPONENT
+ *
+ * @param quality     Quality band of the answer
+ * @param elapsedMs   How long the current run has been active (ms)
+ */
+export function calcTimeGain(
+  quality: AnswerQuality,
+  elapsedMs: number,
+): number {
+  const baseGain =
+    quality === "perfect"
+      ? TIME_GAIN_PERFECT_MS
+      : quality === "good"
+        ? TIME_GAIN_GOOD_MS
+        : 0;
+
+  if (baseGain === 0) return 0;
+
+  // decay factor: starts at 1 and decreases as elapsed time grows
+  const decay = Math.pow(
+    1 / (1 + elapsedMs / 60_000),
+    TIME_GAIN_DECAY_EXPONENT,
+  );
+  return Math.round(baseGain * decay);
 }

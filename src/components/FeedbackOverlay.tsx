@@ -65,6 +65,9 @@ export function FeedbackOverlay({
             -{WRONG_ANSWER_TIME_PENALTY_MS / 1000}s
           </span>
         )}
+        {result.correct && (
+          <span className="ml-2 text-green-400">+{result.timeGainMs}s</span>
+        )}
       </div>
 
       {/* Correct / Wrong indicator */}
