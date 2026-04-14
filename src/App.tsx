@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { GameMode, GameScreen } from "./types";
+import type { AudioMode, GameMode, GameScreen } from "./types";
 import { useControlBindings } from "./hooks/useControlBindings";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 import { ModeSelector } from "./components/ModeSelector";
@@ -12,6 +12,10 @@ function App() {
   const [bestStreak, setBestStreak] = useLocalStorage(
     "valvecraft:bestStreak",
     0,
+  );
+  const [audioMode, setAudioMode] = useLocalStorage<AudioMode>(
+    "valvecraft:audioMode",
+    "mono",
   );
   const {
     bindings: controlBindings,
@@ -34,7 +38,9 @@ function App() {
       {screen === "menu" && (
         <div className="flex min-h-screen flex-col items-center justify-center px-4 py-8">
           <ModeSelector
+            audioMode={audioMode}
             controlBindings={controlBindings}
+            onAudioModeChange={setAudioMode}
             onControlBindingsChange={setControlBindings}
             onControlBindingsReset={resetControlBindings}
             onStart={handleStart}
@@ -62,6 +68,7 @@ function App() {
 
       {screen === "game" && mode && (
         <GameView
+          audioMode={audioMode}
           controlBindings={controlBindings}
           mode={mode}
           onExit={handleExit}

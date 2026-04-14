@@ -1,5 +1,6 @@
 import { useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import type {
+  AudioMode,
   ControlAction,
   ControlBindings,
   GameMode,
@@ -17,7 +18,9 @@ import {
 } from "../utils/controlBindings";
 
 interface ModeSelectorProps {
+  audioMode: AudioMode;
   controlBindings: ControlBindings;
+  onAudioModeChange: (mode: AudioMode) => void;
   onControlBindingsChange: (
     value: ControlBindings | ((prev: ControlBindings) => ControlBindings),
   ) => void;
@@ -61,7 +64,9 @@ const TRUMPET_OPTIONS: {
 ];
 
 export function ModeSelector({
+  audioMode,
   controlBindings,
+  onAudioModeChange,
   onControlBindingsChange,
   onControlBindingsReset,
   onStart,
@@ -169,6 +174,10 @@ export function ModeSelector({
     setListeningAction(null);
     onControlBindingsReset();
     setControlMessage("Controles restaurados.");
+  }
+
+  function handleAudioModeChange(mode: AudioMode) {
+    onAudioModeChange(mode);
   }
 
   return (
@@ -348,6 +357,34 @@ export function ModeSelector({
                 >
                   Restaurar padrão
                 </button>
+              </div>
+
+              <div className="mb-4 rounded-md bg-[#1a1a2e]/70 p-3">
+                <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#cd7f32]/60">
+                  Som
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { value: "mono" as AudioMode, label: "Mono curto" },
+                    { value: "off" as AudioMode, label: "Sem som" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => handleAudioModeChange(opt.value)}
+                      className={`
+                        rounded border px-3 py-2 text-sm font-semibold transition-colors
+                        ${
+                          audioMode === opt.value
+                            ? "border-[#d4a853] bg-[#d4a853]/10 text-[#d4a853]"
+                            : "border-[#cd7f32]/20 bg-[#16213e] text-[#fffff0]/60 hover:border-[#cd7f32]/40"
+                        }
+                      `}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div className="grid grid-cols-1 gap-2 text-sm text-[#fffff0]/60 sm:grid-cols-2">

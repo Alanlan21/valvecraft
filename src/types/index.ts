@@ -18,6 +18,7 @@ export interface Fingering {
 export type RangeLevel = "beginner" | "intermediate" | "advanced";
 export type NoteType = "natural" | "flat" | "sharp" | "chromatic";
 export type TrumpetType = "Bb" | "C";
+export type AudioMode = "mono" | "off";
 export type ControlAction = "valve1" | "valve2" | "valve3" | "slide" | "submit";
 
 export interface KeyBinding {

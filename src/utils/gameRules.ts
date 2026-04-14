@@ -2,7 +2,7 @@ export const RUN_DURATION_MS = 60_000;
 export const WRONG_ANSWER_TIME_PENALTY_MS = 3_000;
 export const CORRECT_FEEDBACK_MS = 350;
 export const WRONG_FEEDBACK_MS = 900;
-export const NOTE_REVEAL_DELAY_MS = 300;
+export const NOTE_REVEAL_DELAY_MS = 450;
 
 export interface StreakTier {
   id: "steady" | "combo" | "focus" | "blitz";

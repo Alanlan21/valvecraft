@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { ControlBindings, GameMode, Note } from "../types";
+import type { AudioMode, ControlBindings, GameMode, Note } from "../types";
 import { useGameEngine } from "../hooks/useGameEngine";
 import { useKeyboardInput } from "../hooks/useKeyboardInput";
 import { useTrumpetAudio } from "../hooks/useTrumpetAudio";
@@ -12,6 +12,7 @@ import { GameOverOverlay } from "./GameOverOverlay";
 import { ScoreBoard } from "./ScoreBoard";
 
 interface GameScreenProps {
+  audioMode: AudioMode;
   controlBindings: ControlBindings;
   mode: GameMode;
   onExit: () => void;
@@ -19,6 +20,7 @@ interface GameScreenProps {
 }
 
 export function GameScreen({
+  audioMode,
   controlBindings,
   mode,
   onExit,
@@ -40,7 +42,10 @@ export function GameScreen({
     timeLeftMs,
     totalAnswers,
   } = engine;
-  const { playNote, playError } = useTrumpetAudio(mode.trumpetType);
+  const { playNote, playError } = useTrumpetAudio(
+    mode.trumpetType,
+    audioMode,
+  );
 
   // Guard: block submissions while feedback is showing
   const handleSubmit = useCallback(

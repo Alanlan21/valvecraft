@@ -1,9 +1,12 @@
 import { useEffect, useRef, useCallback } from "react";
 import * as Tone from "tone";
-import type { TrumpetType } from "../types";
+import type { AudioMode, TrumpetType } from "../types";
 
 const BASE_URL =
   "https://cdn.jsdelivr.net/gh/nbrosowsky/tonejs-instruments@master/samples/trumpet/";
+const NOTE_DURATION_SECONDS = 0.35;
+const NOTE_ATTACK_OFFSET_SECONDS = 0.005;
+const SYNTH_DISPOSE_DELAY_MS = 400;
 
 const TRUMPET_SAMPLES: Record<string, string> = {
   A3: `${BASE_URL}A3.mp3`,
@@ -19,7 +22,6 @@ const TRUMPET_SAMPLES: Record<string, string> = {
   G4: `${BASE_URL}G4.mp3`,
 };
 
-// Normalize enharmonics — Tone.js prefere sustenidos
 const ENHARMONIC: Record<string, string> = {
   Db4: "C#4",
   Eb4: "D#4",
@@ -35,18 +37,24 @@ function toToneNote(noteId: string): string {
   return ENHARMONIC[noteId] ?? noteId;
 }
 
-/**
- * Bb trumpet: pitch escrito soa 2 semitons ABAIXO do pitch de concerto.
- * Os samples estão em pitch de concerto, então transpomos -2 ao tocar.
- * C trumpet: sem transposição.
- */
-export function useTrumpetAudio(trumpetType: TrumpetType = "Bb") {
+function isAudioOff(modeRef: { current: AudioMode }) {
+  return modeRef.current === "off";
+}
+
+export function useTrumpetAudio(
+  trumpetType: TrumpetType = "Bb",
+  audioMode: AudioMode = "mono",
+) {
   const samplerRef = useRef<Tone.Sampler | null>(null);
   const loadedRef = useRef(false);
+  const playTokenRef = useRef(0);
+  const audioModeRef = useRef(audioMode);
+  audioModeRef.current = audioMode;
 
   useEffect(() => {
     const sampler = new Tone.Sampler({
       urls: TRUMPET_SAMPLES,
+      release: 0.04,
       onload: () => {
         loadedRef.current = true;
       },
@@ -55,6 +63,7 @@ export function useTrumpetAudio(trumpetType: TrumpetType = "Bb") {
     samplerRef.current = sampler;
 
     return () => {
+      playTokenRef.current += 1;
       sampler.dispose();
       samplerRef.current = null;
       loadedRef.current = false;
@@ -63,36 +72,72 @@ export function useTrumpetAudio(trumpetType: TrumpetType = "Bb") {
 
   const playNote = useCallback(
     async (noteId: string) => {
-      if (!samplerRef.current || !loadedRef.current) return;
+      if (
+        isAudioOff(audioModeRef) ||
+        !samplerRef.current ||
+        !loadedRef.current
+      ) {
+        return;
+      }
+
+      const playToken = (playTokenRef.current += 1);
+
       try {
         await Tone.start();
+
+        if (
+          playToken !== playTokenRef.current ||
+          isAudioOff(audioModeRef) ||
+          !samplerRef.current
+        ) {
+          return;
+        }
+
         const written = toToneNote(noteId);
         const semitones = trumpetType === "Bb" ? -2 : 0;
         const concert =
           semitones === 0
             ? written
             : (Tone.Frequency(written).transpose(semitones).toNote() as string);
-        samplerRef.current.releaseAll(); // stop any previous note before attacking
-        samplerRef.current.triggerAttackRelease(concert, "2n");
+        const now = Tone.now();
+
+        samplerRef.current.releaseAll(now);
+        samplerRef.current.triggerAttackRelease(
+          concert,
+          NOTE_DURATION_SECONDS,
+          now + NOTE_ATTACK_OFFSET_SECONDS,
+        );
       } catch {
-        // Audio blocked or unavailable — silently ignore
+        // Audio can be blocked by the browser before user interaction.
       }
     },
     [trumpetType],
   );
 
-  /** Short dissonant buzz — fallback when the fingering has no known note. */
   const playError = useCallback(async () => {
+    if (isAudioOff(audioModeRef)) return;
+
+    const playToken = (playTokenRef.current += 1);
+
     try {
       await Tone.start();
+
+      if (
+        playToken !== playTokenRef.current ||
+        isAudioOff(audioModeRef)
+      ) {
+        return;
+      }
+
       const synth = new Tone.Synth({
         oscillator: { type: "sawtooth" },
-        envelope: { attack: 0.01, decay: 0.1, sustain: 0, release: 0.1 },
+        envelope: { attack: 0.005, decay: 0.08, sustain: 0, release: 0.05 },
       }).toDestination();
+
       synth.triggerAttackRelease("C2", "16n");
-      setTimeout(() => synth.dispose(), 500);
+      setTimeout(() => synth.dispose(), SYNTH_DISPOSE_DELAY_MS);
     } catch {
-      // ignore
+      // Audio can be blocked by the browser before user interaction.
     }
   }, []);
 
