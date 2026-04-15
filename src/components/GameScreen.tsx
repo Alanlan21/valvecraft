@@ -5,6 +5,7 @@ import { useKeyboardInput } from "../hooks/useKeyboardInput";
 import { useTrumpetAudio } from "../hooks/useTrumpetAudio";
 import { NOTE_REVEAL_DELAY_MS } from "../utils/gameRules";
 import { fingeringToNoteId } from "../utils/noteUtils";
+import { fingeringMap } from "../data/fingeringMap";
 import { StaffDisplay } from "./StaffDisplay";
 import { ValveIndicator } from "./ValveIndicator";
 import { FeedbackOverlay } from "./FeedbackOverlay";
@@ -32,6 +33,7 @@ export function GameScreen({
     clearLastResult,
     correctAnswers,
     currentNote,
+    currentNoteErrors,
     gameActive,
     gameOver,
     lastResult,
@@ -111,6 +113,11 @@ export function GameScreen({
   // displayNote: the note actually rendered on screen.
   // Hidden the instant the overlay appears; revealed together with audio after it clears.
   const [displayNote, setDisplayNote] = useState<Note | null>(null);
+  // showHint: whether the "Ver dedilhado" panel is open. Resets when the note changes.
+  const [showHint, setShowHint] = useState(false);
+  useEffect(() => {
+    setShowHint(false);
+  }, [currentNote?.id]);
   useEffect(() => {
     if (gameOver) {
       setDisplayNote(null);
@@ -184,12 +191,31 @@ export function GameScreen({
         <ValveIndicator
           controlBindings={controlBindings}
           currentInput={currentInput}
-          expected={
-            lastResult && !lastResult.correct ? lastResult.expected : null
-          }
-          showExpected={!!lastResult && !lastResult.correct}
         />
       </div>
+
+      {/* "Ver dedilhado" hint — appears after 2+ errors on the same note */}
+      {currentNoteErrors >= 2 && displayNote && (
+        <div className="flex flex-col items-center gap-3">
+          <button
+            onClick={() => setShowHint((v) => !v)}
+            className="rounded-lg border border-[#cd7f32]/40 px-4 py-1.5 text-sm text-[#d4a853]/70 transition-colors hover:border-[#d4a853]/60 hover:text-[#d4a853]"
+          >
+            {showHint ? "Ocultar dedilhado" : "💡 Ver dedilhado"}
+          </button>
+          {showHint && fingeringMap[displayNote.id] && (
+            <div className="flex flex-col items-center gap-2 rounded-xl border border-[#cd7f32]/20 bg-[#16213e]/80 p-4">
+              <span className="text-xs font-semibold text-[#fffff0]/50">
+                Digitação correta para {displayNote.id}
+              </span>
+              <ValveIndicator
+                controlBindings={controlBindings}
+                currentInput={fingeringMap[displayNote.id]}
+              />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Submit hint */}
       <div className="mt-2 text-center text-sm text-[#fffff0]/20">
@@ -203,7 +229,6 @@ export function GameScreen({
       {/* Feedback overlay */}
       {!gameOver && (
         <FeedbackOverlay
-          controlBindings={controlBindings}
           result={lastResult}
           onDismiss={clearLastResult}
         />

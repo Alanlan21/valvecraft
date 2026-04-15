@@ -28,6 +28,8 @@ export interface GameEngineState {
   timeLeftMs: number;
   totalAnswers: number;
   correctAnswers: number;
+  /** Number of wrong attempts on the current note. Resets to 0 when a new note appears. */
+  currentNoteErrors: number;
 }
 
 const TIMER_TICK_MS = 100;
@@ -44,6 +46,7 @@ const INITIAL_STATE: GameEngineState = {
   timeLeftMs: RUN_DURATION_MS,
   totalAnswers: 0,
   correctAnswers: 0,
+  currentNoteErrors: 0,
 };
 
 /**
@@ -158,7 +161,9 @@ export function useGameEngine() {
 
         const quality = correct ? classifyAnswerQuality(timeMs) : "ok";
         const elapsedRunMs = performance.now() - runStartAt.current;
-        const timeGainMs = correct ? calcTimeGain(quality, elapsedRunMs) : 0;
+        // No time gain if the player already missed this note at least once
+        const canGainTime = correct && prev.currentNoteErrors === 0;
+        const timeGainMs = canGainTime ? calcTimeGain(quality, elapsedRunMs) : 0;
 
         const newStreak = correct ? prev.streak + 1 : 0;
         const points = calculateScore(timeMs, prev.streak, correct);
@@ -198,6 +203,7 @@ export function useGameEngine() {
           timeLeftMs,
           totalAnswers: prev.totalAnswers + 1,
           correctAnswers: prev.correctAnswers + (correct ? 1 : 0),
+          currentNoteErrors: correct ? 0 : prev.currentNoteErrors + 1,
         };
       });
     },

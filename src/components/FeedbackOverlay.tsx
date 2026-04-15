@@ -1,20 +1,17 @@
 import { useEffect, useState } from "react";
-import type { AnswerResult, ControlBindings } from "../types";
+import type { AnswerResult } from "../types";
 import {
   CORRECT_FEEDBACK_MS,
   WRONG_ANSWER_TIME_PENALTY_MS,
   WRONG_FEEDBACK_MS,
 } from "../utils/gameRules";
-import { ValveIndicator } from "./ValveIndicator";
 
 interface FeedbackOverlayProps {
-  controlBindings: ControlBindings;
   result: AnswerResult | null;
   onDismiss: () => void;
 }
 
 export function FeedbackOverlay({
-  controlBindings,
   result,
   onDismiss,
 }: FeedbackOverlayProps) {
@@ -79,19 +76,6 @@ export function FeedbackOverlay({
       >
         {result.correct ? "✓" : "✗"}
       </div>
-
-      {/* Show expected fingering on wrong answer */}
-      {!result.correct && (
-        <div className="mt-4 flex flex-col items-center gap-3 rounded-xl bg-[#1a1a2e]/90 p-4">
-          <span className="text-sm font-semibold text-[#fffff0]/70">
-            Digitação correta para {result.note.id}:
-          </span>
-          <ValveIndicator
-            controlBindings={controlBindings}
-            currentInput={result.expected}
-          />
-        </div>
-      )}
     </div>
   );
 }
