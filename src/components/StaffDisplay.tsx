@@ -48,17 +48,15 @@ export function StaffDisplay({ note }: StaffDisplayProps) {
       // Create the visible note
       const key = note.vexflowKey; // already in 'c/4' or 'c#/4' form
       const vfNote = new VF.StaveNote({ keys: [key], duration: "w" });
-      // Add accidental if present in key
-      if (/[#b]/.test(key)) {
-        const acc = key.match(/[#b]+/)?.[0];
-        if (acc) {
-          try {
-            // VexFlow v4 uses addModifier to attach accidentals
-            vfNote.addModifier(new VF.Accidental(acc), 0);
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          } catch (e) {
-            // ignore if API differs
-          }
+      // Add accidental if present in key (format: "noteLetter[accidental]/octave", e.g. "bb/3")
+      // Capture only the accidental chars AFTER the first letter to avoid double-counting note names.
+      const acc = key.match(/^[a-g]([#b]+)\//i)?.[1];
+      if (acc) {
+        try {
+          // VexFlow v4 uses addModifier to attach accidentals
+          vfNote.addModifier(new VF.Accidental(acc), 0);
+        } catch (e) {
+          // ignore if API differs
         }
       }
 
@@ -113,9 +111,7 @@ export function StaffDisplay({ note }: StaffDisplayProps) {
       }
       try {
         // destroy renderer if available
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (rendererRef as any)?.destroy?.();
-      // eslint-disable-next-line no-empty
       } catch {}
     };
   }, [note, stableId]);

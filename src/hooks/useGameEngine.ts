@@ -184,6 +184,7 @@ export function useGameEngine() {
           note: prev.currentNote,
           quality,
           timeGainMs,
+          hadPriorError: prev.currentNoteErrors > 0,
         };
 
         if (!gameOver) {

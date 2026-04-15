@@ -47,6 +47,8 @@ export interface AnswerResult {
   quality: AnswerQuality;
   /** Milliseconds added to the run clock by this answer (0 on wrong/ok). */
   timeGainMs: number;
+  /** True when the player had at least one wrong attempt on this note before getting it right. */
+  hadPriorError: boolean;
 }
 
 export type GameScreen = "menu" | "game" | "result";
