@@ -44,10 +44,7 @@ export function GameScreen({
     timeLeftMs,
     totalAnswers,
   } = engine;
-  const { playNote, playError } = useTrumpetAudio(
-    mode.trumpetType,
-    audioMode,
-  );
+  const { playNote, playError } = useTrumpetAudio(mode.trumpetType, audioMode);
 
   // Guard: block submissions while feedback is showing
   const handleSubmit = useCallback(
@@ -228,10 +225,7 @@ export function GameScreen({
 
       {/* Feedback overlay */}
       {!gameOver && (
-        <FeedbackOverlay
-          result={lastResult}
-          onDismiss={clearLastResult}
-        />
+        <FeedbackOverlay result={lastResult} onDismiss={clearLastResult} />
       )}
 
       {gameOver && (

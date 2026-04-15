@@ -163,7 +163,9 @@ export function useGameEngine() {
         const elapsedRunMs = performance.now() - runStartAt.current;
         // No time gain if the player already missed this note at least once
         const canGainTime = correct && prev.currentNoteErrors === 0;
-        const timeGainMs = canGainTime ? calcTimeGain(quality, elapsedRunMs) : 0;
+        const timeGainMs = canGainTime
+          ? calcTimeGain(quality, elapsedRunMs)
+          : 0;
 
         const newStreak = correct ? prev.streak + 1 : 0;
         const points = calculateScore(timeMs, prev.streak, correct);

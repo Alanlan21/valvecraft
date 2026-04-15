@@ -11,10 +11,7 @@ interface FeedbackOverlayProps {
   onDismiss: () => void;
 }
 
-export function FeedbackOverlay({
-  result,
-  onDismiss,
-}: FeedbackOverlayProps) {
+export function FeedbackOverlay({ result, onDismiss }: FeedbackOverlayProps) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
