@@ -83,9 +83,9 @@ export function SheetMusicDisplay({
   const playheadRef = useRef<HTMLDivElement>(null);
 
   // Store notehead X spans for precise playhead alignment.
-  const notePositionsRef = useRef<Map<number, { startX: number; endX: number }>>(
-    new Map(),
-  );
+  const notePositionsRef = useRef<
+    Map<number, { startX: number; endX: number }>
+  >(new Map());
   // Store refs to SVG note groups for efficient coloring
   const noteGroupsRef = useRef<Element[]>([]);
 

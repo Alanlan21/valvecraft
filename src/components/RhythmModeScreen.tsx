@@ -27,8 +27,6 @@ interface RhythmModeScreenProps {
 
 type GamePhase = "ready" | "countdown" | "playing" | "paused" | "complete";
 
-
-
 export function RhythmModeScreen({
   sheet,
   trumpetType,
