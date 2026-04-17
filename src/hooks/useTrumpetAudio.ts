@@ -122,10 +122,7 @@ export function useTrumpetAudio(
     try {
       await Tone.start();
 
-      if (
-        playToken !== playTokenRef.current ||
-        isAudioOff(audioModeRef)
-      ) {
+      if (playToken !== playTokenRef.current || isAudioOff(audioModeRef)) {
         return;
       }
 
@@ -141,5 +138,34 @@ export function useTrumpetAudio(
     }
   }, []);
 
-  return { playNote, playError };
+  const playMetronomeClick = useCallback(
+    async (isDownbeat: boolean = false) => {
+      if (isAudioOff(audioModeRef)) return;
+
+      const playToken = (playTokenRef.current += 1);
+
+      try {
+        await Tone.start();
+
+        if (playToken !== playTokenRef.current || isAudioOff(audioModeRef)) {
+          return;
+        }
+
+        const synth = new Tone.Synth({
+          oscillator: { type: "sine" },
+          envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.02 },
+        }).toDestination();
+
+        // Higher pitch for downbeat, lower for other beats
+        const note = isDownbeat ? "G5" : "C5";
+        synth.triggerAttackRelease(note, "32n");
+        setTimeout(() => synth.dispose(), SYNTH_DISPOSE_DELAY_MS);
+      } catch {
+        // Audio can be blocked by the browser before user interaction.
+      }
+    },
+    [],
+  );
+
+  return { playNote, playError, playMetronomeClick };
 }

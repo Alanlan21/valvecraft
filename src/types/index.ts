@@ -1,3 +1,6 @@
+// Re-export sheet music types
+export * from "./sheet";
+
 export interface Note {
   /** Display name, e.g. "C#", "Eb", "G" */
   name: string;
@@ -51,4 +54,9 @@ export interface AnswerResult {
   hadPriorError: boolean;
 }
 
-export type GameScreen = "menu" | "game" | "result";
+export type GameScreen =
+  | "menu"
+  | "game"
+  | "result"
+  | "rhythm-select"
+  | "rhythm-play";

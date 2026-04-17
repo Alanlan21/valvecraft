@@ -26,6 +26,7 @@ interface ModeSelectorProps {
   ) => void;
   onControlBindingsReset: () => void;
   onStart: (mode: GameMode) => void;
+  onRhythmMode: (trumpetType: TrumpetType) => void;
 }
 
 type SettingsPanel = "range" | "notes" | "trumpet" | "controls";
@@ -70,13 +71,15 @@ export function ModeSelector({
   onControlBindingsChange,
   onControlBindingsReset,
   onStart,
+  onRhythmMode,
 }: ModeSelectorProps) {
   const [rangeLevel, setRangeLevel] = useState<RangeLevel>("beginner");
   const [noteType, setNoteType] = useState<NoteType>("natural");
   const [trumpetType, setTrumpetType] = useState<TrumpetType>("Bb");
   const [activePanel, setActivePanel] = useState<SettingsPanel | null>(null);
-  const [listeningAction, setListeningAction] =
-    useState<ControlAction | null>(null);
+  const [listeningAction, setListeningAction] = useState<ControlAction | null>(
+    null,
+  );
   const [controlMessage, setControlMessage] = useState<string | null>(null);
 
   const mode: GameMode = { rangeLevel, noteType, trumpetType };
@@ -97,7 +100,11 @@ export function ModeSelector({
       label: "Tipo de notas",
       value: `${selectedType.label} (${previewNotes.length})`,
     },
-    { panel: "trumpet", label: "Instrumento", value: selectedTrumpet.shortLabel },
+    {
+      panel: "trumpet",
+      label: "Instrumento",
+      value: selectedTrumpet.shortLabel,
+    },
     {
       panel: "controls",
       label: "Controles",
@@ -194,20 +201,29 @@ export function ModeSelector({
 
       {/* Quick start */}
       <div className="flex w-full flex-col items-center gap-3">
-        <button
-          onClick={() => onStart(mode)}
-          disabled={previewNotes.length === 0}
-          className={`
-            w-full rounded-xl py-4 text-lg font-black uppercase tracking-wider transition-all
-            ${
-              previewNotes.length > 0
-                ? "bg-[#d4a853] text-[#1a1a2e] shadow-lg shadow-[#d4a853]/20 hover:bg-[#e0b86a] hover:shadow-[#d4a853]/40 active:scale-[0.98]"
-                : "cursor-not-allowed bg-[#2a2a4a] text-[#fffff0]/30"
-            }
-          `}
-        >
-          Jogar
-        </button>
+        <div className="flex w-full gap-3">
+          <button
+            onClick={() => onStart(mode)}
+            disabled={previewNotes.length === 0}
+            className={`
+              flex-1 rounded-xl py-4 text-lg font-black uppercase tracking-wider transition-all
+              ${
+                previewNotes.length > 0
+                  ? "bg-[#d4a853] text-[#1a1a2e] shadow-lg shadow-[#d4a853]/20 hover:bg-[#e0b86a] hover:shadow-[#d4a853]/40 active:scale-[0.98]"
+                  : "cursor-not-allowed bg-[#2a2a4a] text-[#fffff0]/30"
+              }
+            `}
+          >
+            Modo Quiz
+          </button>
+
+          <button
+            onClick={() => onRhythmMode(trumpetType)}
+            className="flex-1 rounded-xl py-4 text-lg font-black uppercase tracking-wider transition-all bg-emerald-600 text-white shadow-lg shadow-emerald-600/20 hover:bg-emerald-500 hover:shadow-emerald-500/40 active:scale-[0.98]"
+          >
+            Modo Ritmo
+          </button>
+        </div>
 
         <p className="text-center text-xs text-[#fffff0]/35">
           {selectedRange.label} / {selectedType.label} /{" "}
