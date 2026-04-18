@@ -9,10 +9,11 @@ import type {
 import { fingeringMap } from "../data/fingeringMap";
 
 export const TIMING_WINDOWS_VALUES = {
-  // Deve bater com HALF_BEATS em SheetMusicDisplay.tsx
-  perfect: 0.3,
+  // Janela de detecção: ±0.1 beats. A zona visual no SheetMusicDisplay
+  // é maior (±0.3) para avisar antecipadamente — só o centro verde detecta.
+  perfect: 0.08,
   good: 0.2,
-  miss: 0.3,
+  miss: 0.1,
 } as const;
 
 export const JUDGMENT_POINTS_VALUES = {
@@ -48,6 +49,7 @@ function fingeringsMatch(a: Fingering, b: Fingering): boolean {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getJudgment(_timingOffset: number): HitJudgment {
   return "perfect"; // all hits inside the window are perfect
 }

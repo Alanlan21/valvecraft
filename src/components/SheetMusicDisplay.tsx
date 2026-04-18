@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useLayoutEffect, useRef, useId, useMemo } from "react";
 import * as VF from "vexflow";
 import type {
@@ -257,10 +258,10 @@ export function SheetMusicDisplay({
     const el = playheadRef.current;
     if (!el || !showPlayhead) return;
 
-    if (currentBeat < 0) {
-      el.style.display = "none";
-      return;
-    }
+    // Mostramos o playhead mesmo para beats negativos para permitir um
+    // lead-in visual (o playhead vem de trás da primeira nota). Não
+    // retornamos aqui — em vez disso extrapolamos a posição antes da
+    // primeira âncora mais abaixo.
 
     const positions = notePositionsRef.current;
     const notes = sheet.notes;
@@ -286,35 +287,8 @@ export function SheetMusicDisplay({
       return;
     }
 
-    let targetX: number;
-
-    if (currentBeat <= anchors[0].beat) {
-      targetX = anchors[0].cx;
-    } else if (currentBeat >= anchors[anchors.length - 1].beat) {
-      // Past last note: extrapolate using last inter-note pixel-per-beat rate
-      const last = anchors[anchors.length - 1];
-      const lastNote = notes[notes.length - 1];
-      if (anchors.length >= 2) {
-        const prev = anchors[anchors.length - 2];
-        const pxPerBeat = (last.cx - prev.cx) / (last.beat - prev.beat);
-        const endBeat = lastNote.startBeat + lastNote.duration;
-        targetX =
-          last.cx +
-          pxPerBeat * Math.min(currentBeat - last.beat, endBeat - last.beat);
-      } else {
-        targetX = last.cx;
-      }
-    } else {
-      // Find the two bracketing anchors and lerp linearly in time
-      let i = 1;
-      while (i < anchors.length && anchors[i].beat <= currentBeat) i++;
-      const a = anchors[i - 1];
-      const b = anchors[i];
-      const t = (currentBeat - a.beat) / (b.beat - a.beat);
-      targetX = a.cx + t * (b.cx - a.cx);
-    }
-
-    // Compute pxPerBeat from consecutive note anchors
+    // Compute pxPerBeat from consecutive note anchors (used for
+    // extrapolation before/after the anchor range).
     let pxPerBeat = 80; // fallback
     if (anchors.length >= 2) {
       let totalPx = 0;
@@ -328,6 +302,38 @@ export function SheetMusicDisplay({
         }
       }
       if (totalBeats > 0) pxPerBeat = totalPx / totalBeats;
+    }
+
+    // Now compute the target X. If we're before the first anchor we
+    // extrapolate backwards using pxPerBeat so the playhead comes from
+    // behind; if after the last anchor we extrapolate forward; otherwise
+    // we lerp between bracketing anchors.
+    let targetX: number;
+    const first = anchors[0];
+    const last = anchors[anchors.length - 1];
+
+    if (currentBeat < first.beat) {
+      // Extrapolate backwards from the first note
+      if (anchors.length >= 2) {
+        targetX = first.cx + pxPerBeat * (currentBeat - first.beat);
+      } else {
+        targetX = first.cx;
+      }
+    } else if (currentBeat > last.beat) {
+      // Extrapolate forwards beyond the last note (clamped to note end)
+      const lastNote = notes[notes.length - 1];
+      const endBeat = lastNote.startBeat + lastNote.duration;
+      targetX =
+        last.cx +
+        pxPerBeat * Math.min(currentBeat - last.beat, endBeat - last.beat);
+    } else {
+      // Find the two bracketing anchors and lerp linearly in time
+      let i = 1;
+      while (i < anchors.length && anchors[i].beat <= currentBeat) i++;
+      const a = anchors[i - 1];
+      const b = anchors[i];
+      const t = (currentBeat - a.beat) / (b.beat - a.beat);
+      targetX = a.cx + t * (b.cx - a.cx);
     }
 
     // ── Zone geometry ──────────────────────────────────────────────────────
@@ -353,22 +359,33 @@ export function SheetMusicDisplay({
     // HALF_BEATS: metade da largura total da zona em beats (cada lado).
     // Deve ser igual a TIMING_WINDOWS_VALUES.perfect em useHitDetection.ts
     // para que a zona verde cubra exatamente a janela de detecção.
-    const HALF_BEATS = 0.3; // ← ajuste aqui (deve bater com perfect em useHitDetection.ts)
+    // HALF_BEATS: metade da zona visual (pode ser maior que a janela de detecção).
+    // O centro verde (±DETECT_BEATS) marca onde a detecção dispara de verdade.
+    const HALF_BEATS = 0.22; // largura total da zona visual: ±0.22 beats
+    const DETECT_BEATS = 0.08; // deve bater com TIMING_WINDOWS_VALUES.perfect
 
     const halfPx = HALF_BEATS * pxPerBeat;
     const totalWidth = halfPx * 2;
+    // Percentual onde o verde começa/termina dentro da zona
+    const pGreenStart = (
+      ((HALF_BEATS - DETECT_BEATS) / (HALF_BEATS * 2)) *
+      100
+    ).toFixed(1);
+    const pGreenEnd = (100 - parseFloat(pGreenStart)).toFixed(1);
 
     el.style.display = "block";
     el.style.left = `${xOrigin + targetX - halfPx}px`;
     el.style.width = `${totalWidth}px`;
-    // Zona toda verde = janela de detecção inteira visível
+    // Amarelo = aviso (ainda não detecta) | Verde = janela de detecção real
     el.style.background = [
       "linear-gradient(to right",
       "transparent",
-      `rgba(34,197,94,0.55) 5%`,
-      `rgba(34,197,94,0.75) 30%`,
-      `rgba(34,197,94,0.75) 70%`,
-      `rgba(34,197,94,0.55) 95%`,
+      `rgba(234,179,8,0.50) 5%`,
+      `rgba(234,179,8,0.50) ${pGreenStart}%`,
+      `rgba(34,197,94,0.80) ${pGreenStart}%`,
+      `rgba(34,197,94,0.80) ${pGreenEnd}%`,
+      `rgba(234,179,8,0.50) ${pGreenEnd}%`,
+      `rgba(234,179,8,0.50) 95%`,
       "transparent)",
     ].join(", ");
   }, [currentBeat, showPlayhead, sheet.notes]);
