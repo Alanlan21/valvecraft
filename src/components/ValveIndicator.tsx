@@ -28,7 +28,10 @@ export function ValveIndicator({
           const isExpected = showExpected && expected?.valves[valve.index];
 
           return (
-            <div key={valve.action} className="flex flex-col items-center gap-2">
+            <div
+              key={valve.action}
+              className="flex flex-col items-center gap-2"
+            >
               {/* Valve cap */}
               <div
                 className={`
@@ -51,8 +54,8 @@ export function ValveIndicator({
                   h-16 w-6 rounded-b-lg border border-t-0 transition-all duration-75
                   ${
                     pressed
-                      ? "border-[#d4a853]/60 bg-gradient-to-b from-[#d4a853]/30 to-[#cd7f32]/20"
-                      : "border-[#cd7f32]/30 bg-gradient-to-b from-[#2a2a4a] to-[#1a1a2e]"
+                      ? "border-[#d4a853]/60 bg-linear-to-b from-[#d4a853]/30 to-[#cd7f32]/20"
+                      : "border-[#cd7f32]/30 bg-linear-to-b from-[#2a2a4a] to-[#1a1a2e]"
                   }
                 `}
               />
@@ -90,8 +93,8 @@ export function ValveIndicator({
             h-16 w-12 rounded-b-lg border border-t-0 transition-all duration-75
             ${
               currentInput.slide
-                ? "translate-x-1 border-[#d4a853]/60 bg-gradient-to-b from-[#d4a853]/20 to-transparent"
-                : "border-[#cd7f32]/30 bg-gradient-to-b from-[#2a2a4a] to-[#1a1a2e]"
+                ? "translate-x-1 border-[#d4a853]/60 bg-linear-to-b from-[#d4a853]/20 to-transparent"
+                : "border-[#cd7f32]/30 bg-linear-to-b from-[#2a2a4a] to-[#1a1a2e]"
             }
           `}
         />

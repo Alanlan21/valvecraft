@@ -82,7 +82,6 @@ export function useKeyboardInput(
       e.preventDefault();
 
       if (e.repeat) return;
-
       if (action === "submit") {
         onSubmitRef.current({
           ...inputRef.current,

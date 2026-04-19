@@ -71,6 +71,14 @@ function groupNotesByMeasure(notes: SheetNote[]): Map<number, SheetNote[]> {
   return groups;
 }
 
+// Minimum pixels per beat when expanding the stave for longer songs.
+// Increase this to make notes more spread out.
+const MIN_PX_PER_BEAT = 60;
+
+// Fraction of the outer container width where the timing spine is fixed.
+// 0.35 = 35% from the left edge of the outer div.
+const SPINE_FRACTION = 0.35;
+
 export function SheetMusicDisplay({
   sheet,
   currentBeat,
@@ -80,7 +88,8 @@ export function SheetMusicDisplay({
 }: SheetMusicDisplayProps) {
   const containerId = useId();
   const stableId = `vf-sheet-${containerId.replace(/:/g, "")}`;
-  const containerRef = useRef<HTMLDivElement>(null);
+  const outerRef = useRef<HTMLDivElement>(null); // outer clip container
+  const containerRef = useRef<HTMLDivElement>(null); // scrolling inner container
   const playheadRef = useRef<HTMLDivElement>(null);
 
   // Store notehead X spans for precise playhead alignment.
@@ -89,6 +98,8 @@ export function SheetMusicDisplay({
   >(new Map());
   // Store refs to SVG note groups for efficient coloring
   const noteGroupsRef = useRef<Element[]>([]);
+  // Natural width of the SVG (set during render, read during scroll)
+  const svgNaturalWidthRef = useRef<number>(0);
 
   // Memoize grouped notes
   const notesByMeasure = useMemo(
@@ -100,28 +111,45 @@ export function SheetMusicDisplay({
   // Only runs when sheet/height change, NOT on every beat tick.
   useEffect(() => {
     const div = containerRef.current;
-    if (!div) return;
+    const outer = outerRef.current;
+    if (!div || !outer) return;
 
     let ro: ResizeObserver | null = null;
 
     const render = () => {
-      if (!div) return;
+      if (!div || !outer) return;
 
       div.innerHTML = "";
       notePositionsRef.current.clear();
       noteGroupsRef.current = [];
 
-      const containerWidth = Math.max(400, Math.round(div.clientWidth));
+      const outerWidth = Math.max(400, Math.round(outer.clientWidth));
       const VF_HEIGHT = height;
 
+      // Compute natural SVG width: at least outerWidth, but expands so each
+      // beat has at least MIN_PX_PER_BEAT pixels.
+      const totalBeats = sheet.notes.reduce(
+        (max, n) => Math.max(max, n.startBeat + n.duration),
+        0,
+      );
+      // Extra left space so the first note starts at ~SPINE_FRACTION of outer
+      const leadInPx = Math.round(outerWidth * SPINE_FRACTION);
+      const musicWidth = Math.max(
+        outerWidth - leadInPx,
+        Math.ceil(totalBeats * MIN_PX_PER_BEAT),
+      );
+      const naturalWidth = leadInPx + musicWidth + 40; // trailing margin
+
+      svgNaturalWidthRef.current = naturalWidth;
+
       const renderer = new VF.Renderer(div, VF.Renderer.Backends.SVG);
-      renderer.resize(containerWidth, VF_HEIGHT);
+      renderer.resize(naturalWidth, VF_HEIGHT);
       const context = renderer.getContext();
 
-      const margin = 20;
-      const staveWidth = containerWidth - margin * 2;
+      const staveLeft = leadInPx;
+      const staveWidth = musicWidth;
 
-      const stave = new VF.Stave(margin, 30, staveWidth);
+      const stave = new VF.Stave(staveLeft, 30, staveWidth);
       stave.addClef("treble");
       stave.addTimeSignature(
         `${sheet.timeSignature.beats}/${sheet.timeSignature.beatValue}`,
@@ -129,8 +157,9 @@ export function SheetMusicDisplay({
       stave.setContext(context).draw();
 
       const allVfNotes: VF.StaveNote[] = [];
+      // Parallel array: which SheetNote corresponds to each VF.StaveNote
+      const allSheetNotesFlat: SheetNote[] = [];
 
-      let noteIndex = 0;
       for (const [, measureNotes] of notesByMeasure) {
         for (const note of measureNotes) {
           const { key, duration } = noteToVexflow(note);
@@ -143,7 +172,7 @@ export function SheetMusicDisplay({
             const acc = getAccidental(key);
             if (acc) vfNote.addModifier(new VF.Accidental(acc), 0);
             allVfNotes.push(vfNote);
-            noteIndex++;
+            allSheetNotesFlat.push(note);
           } catch (e) {
             console.warn("Failed to create note:", note, e);
           }
@@ -151,11 +180,6 @@ export function SheetMusicDisplay({
       }
 
       if (allVfNotes.length === 0) return;
-
-      const totalBeats = sheet.notes.reduce(
-        (max, n) => Math.max(max, n.startBeat + n.duration),
-        0,
-      );
 
       const voice = new VF.Voice({
         num_beats: Math.ceil(totalBeats),
@@ -165,6 +189,32 @@ export function SheetMusicDisplay({
       voice.addTickables(allVfNotes);
 
       new VF.Formatter().joinVoices([voice]).format([voice], staveWidth - 80);
+
+      // ── Proportional spacing ───────────────────────────────────────────────
+      // VexFlow's default formatter places all notes at equal horizontal
+      // intervals regardless of duration. We fix this by shifting each note
+      // to a position proportional to its startBeat so the playhead moves
+      // at constant visual speed regardless of note value.
+      if (allVfNotes.length >= 2) {
+        const firstNoteX = allVfNotes[0].getAbsoluteX();
+        const firstBeat = allSheetNotesFlat[0].startBeat;
+        // Available space from first notehead to the right margin of the stave
+        const staveRightX = staveLeft + staveWidth - 40;
+        const availablePx = staveRightX - firstNoteX;
+        const availableBeats = totalBeats - firstBeat;
+
+        if (availableBeats > 0) {
+          const pxPerBeat = availablePx / availableBeats;
+          allVfNotes.forEach((vfNote, i) => {
+            const targetX =
+              firstNoteX +
+              (allSheetNotesFlat[i].startBeat - firstBeat) * pxPerBeat;
+            const currentX = vfNote.getAbsoluteX();
+            vfNote.setXShift(targetX - currentX);
+          });
+        }
+      }
+
       voice.draw(context, stave);
 
       // Store notehead spans for playhead alignment.
@@ -194,10 +244,11 @@ export function SheetMusicDisplay({
       // Apply default styling
       const svg = div.querySelector("svg");
       if (svg) {
-        svg.setAttribute("viewBox", `0 0 ${containerWidth} ${VF_HEIGHT}`);
-        svg.style.width = "100%";
-        svg.style.height = "auto";
+        svg.setAttribute("viewBox", `0 0 ${naturalWidth} ${VF_HEIGHT}`);
+        svg.style.width = `${naturalWidth}px`;
+        svg.style.height = `${VF_HEIGHT}px`;
         svg.style.overflow = "visible";
+        svg.style.display = "block";
 
         svg.querySelectorAll(".vf-stave path, .vf-stave line").forEach((el) => {
           (el as SVGElement).style.fill = "none";
@@ -224,7 +275,7 @@ export function SheetMusicDisplay({
 
     if ("ResizeObserver" in window) {
       ro = new ResizeObserver(() => render());
-      ro.observe(div);
+      ro.observe(outer);
     }
 
     return () => {
@@ -250,28 +301,26 @@ export function SheetMusicDisplay({
     });
   }, [noteResults]);
 
-  // ── Playhead position ──────────────────────────────────────────────────────
-  // Runs every beat tick but only mutates a single DOM property — no React
-  // re-render triggered. Uses anchor-based linear interpolation between note
-  // center X positions so the line moves at perfectly constant speed.
+  // ── Auto-scroll + zone ────────────────────────────────────────────────────
+  // Runs every beat tick but only mutates transform/style — no React re-render.
+  // Strategy (Option A): the SVG is wider than the screen. Instead of moving
+  // the playhead, we slide the SVG container left so the current note always
+  // aligns with the fixed SPINE_FRACTION position on screen.
   useLayoutEffect(() => {
-    const el = playheadRef.current;
-    if (!el || !showPlayhead) return;
-
-    // Mostramos o playhead mesmo para beats negativos para permitir um
-    // lead-in visual (o playhead vem de trás da primeira nota). Não
-    // retornamos aqui — em vez disso extrapolamos a posição antes da
-    // primeira âncora mais abaixo.
+    const inner = containerRef.current;
+    const outer = outerRef.current;
+    const zone = playheadRef.current;
+    if (!inner || !outer || !showPlayhead) return;
 
     const positions = notePositionsRef.current;
     const notes = sheet.notes;
 
     if (positions.size === 0 || notes.length === 0) {
-      el.style.display = "none";
+      if (zone) zone.style.display = "none";
       return;
     }
 
-    // Build anchors: beat → center X of the notehead, not the full glyph box.
+    // Build anchors: beat → center X of the notehead in SVG coordinates.
     const anchors: Array<{ beat: number; cx: number }> = [];
     for (let i = 0; i < notes.length; i++) {
       const pos = positions.get(i);
@@ -283,13 +332,12 @@ export function SheetMusicDisplay({
     }
 
     if (anchors.length === 0) {
-      el.style.display = "none";
+      if (zone) zone.style.display = "none";
       return;
     }
 
-    // Compute pxPerBeat from consecutive note anchors (used for
-    // extrapolation before/after the anchor range).
-    let pxPerBeat = 80; // fallback
+    // pxPerBeat — average spacing between consecutive note anchors.
+    let pxPerBeat = MIN_PX_PER_BEAT;
     if (anchors.length >= 2) {
       let totalPx = 0;
       let totalBeats = 0;
@@ -304,109 +352,93 @@ export function SheetMusicDisplay({
       if (totalBeats > 0) pxPerBeat = totalPx / totalBeats;
     }
 
-    // Now compute the target X. If we're before the first anchor we
-    // extrapolate backwards using pxPerBeat so the playhead comes from
-    // behind; if after the last anchor we extrapolate forward; otherwise
-    // we lerp between bracketing anchors.
-    let targetX: number;
+    // Compute current X in SVG space (same logic as before: lerp + extrapolate).
+    let noteX: number;
     const first = anchors[0];
     const last = anchors[anchors.length - 1];
 
     if (currentBeat < first.beat) {
-      // Extrapolate backwards from the first note
-      if (anchors.length >= 2) {
-        targetX = first.cx + pxPerBeat * (currentBeat - first.beat);
-      } else {
-        targetX = first.cx;
-      }
+      noteX =
+        anchors.length >= 2
+          ? first.cx + pxPerBeat * (currentBeat - first.beat)
+          : first.cx;
     } else if (currentBeat > last.beat) {
-      // Extrapolate forwards beyond the last note (clamped to note end)
       const lastNote = notes[notes.length - 1];
       const endBeat = lastNote.startBeat + lastNote.duration;
-      targetX =
+      noteX =
         last.cx +
         pxPerBeat * Math.min(currentBeat - last.beat, endBeat - last.beat);
     } else {
-      // Find the two bracketing anchors and lerp linearly in time
       let i = 1;
       while (i < anchors.length && anchors[i].beat <= currentBeat) i++;
       const a = anchors[i - 1];
       const b = anchors[i];
       const t = (currentBeat - a.beat) / (b.beat - a.beat);
-      targetX = a.cx + t * (b.cx - a.cx);
+      noteX = a.cx + t * (b.cx - a.cx);
     }
 
-    // ── Zone geometry ──────────────────────────────────────────────────────
-    // Symmetric zone centered on the note beat (offset = 0 = spine).
-    //
-    // Duas constantes para ajustar manualmente:
-    //   HALF_BEATS   — metade da largura total da zona em beats (cada lado).
-    //                  Maior = zona mais larga visualmente.
-    //   DETECT_BEATS — metade da janela de detecção (deve bater com
-    //                  TIMING_WINDOWS_VALUES.perfect em useHitDetection.ts).
-    //                  Controla a largura do verde.
-    //
-    // Layout resultante:
-    //   [transparente] [AMARELO] [VERDE] [SPINE] [VERDE] [AMARELO] [transparente]
-    //   0%          5%        33%      50%      67%      95%      100%
-    //
-    // ── Correção de offset CSS ─────────────────────────────────────────────
-    // O playheadRef é posicionado relativamente ao div.relative externo, mas
-    // as coordenadas do VexFlow são relativas ao containerRef (que fica dentro
-    // do p-4 com 16px de padding). containerRef.offsetLeft mede esse desvio.
-    const xOrigin = containerRef.current?.offsetLeft ?? 0;
+    // Translate the inner container so that `noteX` in SVG space maps to
+    // SPINE_FRACTION * outerWidth on screen.
+    const outerWidth = outer.clientWidth;
+    const spineScreenX = outerWidth * SPINE_FRACTION;
+    const translateX = spineScreenX - noteX;
+    inner.style.transform = `translateX(${translateX}px)`;
 
-    // HALF_BEATS: metade da largura total da zona em beats (cada lado).
-    // Deve ser igual a TIMING_WINDOWS_VALUES.perfect em useHitDetection.ts
-    // para que a zona verde cubra exatamente a janela de detecção.
-    // HALF_BEATS: metade da zona visual (pode ser maior que a janela de detecção).
-    // O centro verde (±DETECT_BEATS) marca onde a detecção dispara de verdade.
-    const HALF_BEATS = 0.22; // largura total da zona visual: ±0.22 beats
-    const DETECT_BEATS = 0.08; // deve bater com TIMING_WINDOWS_VALUES.perfect
+    // ── Zone overlay (fixed in outer-relative space) ───────────────────────
+    if (zone) {
+      const HALF_BEATS = 0.22;
+      const DETECT_BEATS = 0.08;
 
-    const halfPx = HALF_BEATS * pxPerBeat;
-    const totalWidth = halfPx * 2;
-    // Percentual onde o verde começa/termina dentro da zona
-    const pGreenStart = (
-      ((HALF_BEATS - DETECT_BEATS) / (HALF_BEATS * 2)) *
-      100
-    ).toFixed(1);
-    const pGreenEnd = (100 - parseFloat(pGreenStart)).toFixed(1);
+      const halfPx = HALF_BEATS * pxPerBeat;
+      const totalWidth = halfPx * 2;
 
-    el.style.display = "block";
-    el.style.left = `${xOrigin + targetX - halfPx}px`;
-    el.style.width = `${totalWidth}px`;
-    // Amarelo = aviso (ainda não detecta) | Verde = janela de detecção real
-    el.style.background = [
-      "linear-gradient(to right",
-      "transparent",
-      `rgba(234,179,8,0.50) 5%`,
-      `rgba(234,179,8,0.50) ${pGreenStart}%`,
-      `rgba(34,197,94,0.80) ${pGreenStart}%`,
-      `rgba(34,197,94,0.80) ${pGreenEnd}%`,
-      `rgba(234,179,8,0.50) ${pGreenEnd}%`,
-      `rgba(234,179,8,0.50) 95%`,
-      "transparent)",
-    ].join(", ");
+      const pGreenStart = (
+        ((HALF_BEATS - DETECT_BEATS) / (HALF_BEATS * 2)) *
+        100
+      ).toFixed(1);
+      const pGreenEnd = (100 - parseFloat(pGreenStart)).toFixed(1);
+
+      zone.style.display = "block";
+      // Center zone on the spine screen position
+      zone.style.left = `${spineScreenX - halfPx}px`;
+      zone.style.width = `${totalWidth}px`;
+      zone.style.background = [
+        "linear-gradient(to right",
+        "transparent",
+        `rgba(234,179,8,0.50) 5%`,
+        `rgba(234,179,8,0.50) ${pGreenStart}%`,
+        `rgba(34,197,94,0.80) ${pGreenStart}%`,
+        `rgba(34,197,94,0.80) ${pGreenEnd}%`,
+        `rgba(234,179,8,0.50) ${pGreenEnd}%`,
+        `rgba(234,179,8,0.50) 95%`,
+        "transparent)",
+      ].join(", ");
+    }
   }, [currentBeat, showPlayhead, sheet.notes]);
 
   return (
     <div className="relative">
-      <div className="rounded-xl bg-[#16213e] p-4 shadow-lg shadow-black/30 w-full">
-        <div id={stableId} ref={containerRef} className="w-full relative" />
+      {/* Outer clipping container — overflow hidden so the SVG scrolls behind */}
+      <div
+        ref={outerRef}
+        className="rounded-xl bg-[#16213e] shadow-lg shadow-black/30 w-full overflow-hidden"
+        style={{ height: `${height}px`, position: "relative" }}
+      >
+        {/* Inner scrolling container — translated by useLayoutEffect */}
+        <div
+          id={stableId}
+          ref={containerRef}
+          style={{ position: "absolute", top: 0, left: 0, willChange: "transform" }}
+        />
 
-        {/* Timing zone — width/position/gradient controlled via useLayoutEffect */}
+        {/* Timing zone — fixed in outer-relative space, centered on SPINE_FRACTION */}
         {showPlayhead && (
           <div
             ref={playheadRef}
             className="absolute top-0 pointer-events-none z-10"
-            style={{
-              height: `${height}px`,
-              marginTop: "16px",
-              display: "none",
-            }}
+            style={{ height: `${height}px`, display: "none" }}
           >
-            {/* Spine = offset 0 = centro exato da zona (50%) */}
+            {/* Spine line */}
             <div
               className="absolute top-0 bottom-0 w-px bg-red-500"
               style={{ left: "50%", transform: "translateX(-50%)" }}

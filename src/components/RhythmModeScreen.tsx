@@ -48,12 +48,12 @@ export function RhythmModeScreen({
   const [bestCombo, setBestCombo] = useState(0);
 
   // Audio
-  const { playNote, playMetronomeClick } = useTrumpetAudio(trumpetType, "mono");
+  const { attackNote, releaseNote, playMetronomeClick } = useTrumpetAudio(trumpetType, "mono");
 
   // Playback engine
   const [playbackState, playbackControls] = usePlaybackEngine({
     sheet,
-    countInBeats: 4, // 1 measure count-in
+    countInBeats: 2, // 1 measure count-in
     onComplete: () => {
       setPhase("complete");
       const results = hitActions.getAllResults();
@@ -92,13 +92,13 @@ export function RhythmModeScreen({
           return newCombo;
         });
 
-        // Play the note on successful hit
-        playNote(result.note.pitch.id);
+        // Sustain the note — will ring until the player releases all keys
+        attackNote(result.note.pitch.id);
       } else {
         setCombo(0);
       }
     },
-    [playNote],
+    [attackNote],
   );
 
   // Keyboard input - we don't use submit in rhythm mode
@@ -108,14 +108,56 @@ export function RhythmModeScreen({
     controlBindings,
   );
 
-  // Build current fingering from input
-  const currentFingering: Fingering = currentInput;
+  // Build current fingering from input.
+  // For rhythm mode we require an explicit 'open' input (Space) to
+  // register an open fingering. If no valves are pressed and Space is
+  // not held, we treat it as "no input" (null) so notes that expect
+  // open fingering won't fire unless the player explicitly presses Space.
+  const [openPressed, setOpenPressed] = useState(false);
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.code === "Space") {
+        if (!e.repeat) setOpenPressed(true);
+        e.preventDefault();
+      }
+    }
+    function onKeyUp(e: KeyboardEvent) {
+      if (e.code === "Space") {
+        setOpenPressed(false);
+        e.preventDefault();
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+    };
+  }, []);
+
+  const anyValvePressed =
+    currentInput.valves.some((v) => v) || currentInput.slide;
+  const EMPTY_FINGERING: Fingering = {
+    valves: [false, false, false],
+    slide: false,
+  };
+  const effectiveFingering: Fingering | null = anyValvePressed
+    ? currentInput
+    : openPressed
+      ? EMPTY_FINGERING
+      : null;
+
+  const displayFingeringForIndicator: Fingering = openPressed
+    ? EMPTY_FINGERING
+    : currentInput;
 
   const hitActions = useHitDetection({
     sheet,
     currentBeat: playbackState.currentBeat,
     isPlaying: phase === "playing",
-    currentFingering,
+    currentFingering: effectiveFingering,
     onNoteResult: handleNoteResult,
   });
 
@@ -124,7 +166,18 @@ export function RhythmModeScreen({
     if (phase === "playing") {
       hitActions.checkNotes();
     }
-  }, [playbackState.currentBeat, currentFingering, phase, hitActions]);
+  }, [playbackState.currentBeat, effectiveFingering, phase, hitActions]);
+
+  // Release sustained note when the player fully releases all keys
+  const prevFingeringRef = useRef<typeof effectiveFingering>(null);
+  useEffect(() => {
+    const prev = prevFingeringRef.current;
+    prevFingeringRef.current = effectiveFingering;
+    // Transition from holding (non-null) to fully released (null)
+    if (prev !== null && effectiveFingering === null) {
+      releaseNote();
+    }
+  }, [effectiveFingering, releaseNote]);
 
   // Handle countdown
   useEffect(() => {
@@ -163,6 +216,7 @@ export function RhythmModeScreen({
   // Pause/resume
   const handlePause = () => {
     if (phase === "playing") {
+      releaseNote(); // stop any held note on pause
       playbackControls.pause();
       setPhase("paused");
     } else if (phase === "paused") {
@@ -173,6 +227,7 @@ export function RhythmModeScreen({
 
   // Restart
   const handleRestart = () => {
+    releaseNote(); // stop any held note on restart
     playbackControls.stop();
     setNoteResults(new Map());
     setScore(0);
@@ -253,7 +308,7 @@ export function RhythmModeScreen({
       <div className="flex justify-center">
         <ValveIndicator
           controlBindings={controlBindings}
-          currentInput={currentFingering}
+          currentInput={displayFingeringForIndicator}
         />
       </div>
 
@@ -324,6 +379,11 @@ export function RhythmModeScreen({
           válvulas e{" "}
           <kbd className="px-2 py-0.5 bg-slate-700 rounded">Shift</kbd> para o
           slide
+          <div className="mt-2 text-sm text-slate-400">
+            Ou pressione{" "}
+            <kbd className="px-2 py-0.5 bg-slate-700 rounded">Espaço</kbd> para
+            nota aberta
+          </div>
         </div>
       )}
 
@@ -331,7 +391,7 @@ export function RhythmModeScreen({
       {(phase === "playing" || phase === "paused" || phase === "complete") && (
         <div className="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-green-500 to-emerald-400 transition-all duration-100"
+            className="h-full bg-linear-to-r from-green-500 to-emerald-400 transition-all duration-100"
             style={{ width: `${playbackState.progress}%` }}
           />
         </div>

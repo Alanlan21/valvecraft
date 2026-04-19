@@ -26,7 +26,7 @@ interface UseHitDetectionOptions {
   sheet: Sheet;
   currentBeat: number;
   isPlaying: boolean;
-  currentFingering: Fingering;
+  currentFingering: Fingering | null;
   onNoteResult?: (result: NoteHitResult) => void;
 }
 
@@ -92,7 +92,7 @@ export function useHitDetection({
         offset >= -TIMING_WINDOWS_VALUES.perfect &&
         offset <= TIMING_WINDOWS_VALUES.perfect
       ) {
-        if (fingeringsMatch(currentFingering, expected)) {
+        if (currentFingering && fingeringsMatch(currentFingering, expected)) {
           const judgment = getJudgment(offset);
           const result: NoteHitResult = {
             note,

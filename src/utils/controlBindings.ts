@@ -124,7 +124,9 @@ function isControlBindings(value: unknown): value is ControlBindings {
     return false;
   }
 
-  const candidate = value as Partial<Record<ControlAction, Partial<KeyBinding>>>;
+  const candidate = value as Partial<
+    Record<ControlAction, Partial<KeyBinding>>
+  >;
 
   return CONTROL_ACTIONS.every((action) => {
     const binding = candidate[action];

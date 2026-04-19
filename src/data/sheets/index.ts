@@ -243,6 +243,167 @@ export const hotCrossBuns: Sheet = {
 };
 
 /**
+ * Parabéns pra Você - Tradicional Brasileiro (simplificado em 4/4)
+ */
+export const parabens: Sheet = {
+  id: "parabens",
+  title: "Parabéns pra Você",
+  composer: "Tradicional",
+  bpm: 90,
+  timeSignature: { beats: 4, beatValue: 4 },
+  difficulty: "easy",
+  category: "melody",
+  totalMeasures: 6,
+  notes: createQuarterNoteSequence(
+    [
+      // "Pa-ra-béns pra vo-cê"
+      { name: "C", octave: 4 }, { name: "C", octave: 4 },
+      { name: "D", octave: 4 }, { name: "C", octave: 4 },
+      // "nes-ta da-ta que-ri-da"
+      { name: "F", octave: 4 }, { name: "E", octave: 4 },
+      { name: "C", octave: 4 }, { name: "C", octave: 4 },
+      // "mui-tas fe-li-ci-da-des"
+      { name: "D", octave: 4 }, { name: "C", octave: 4 },
+      { name: "G", octave: 4 }, { name: "F", octave: 4 },
+      // "a vo-cê"
+      { name: "C", octave: 5 }, { name: "A", octave: 4 },
+      { name: "F", octave: 4 }, { name: "E", octave: 4 },
+      // "e pros seus"
+      { name: "D", octave: 4 }, { name: "D", octave: 4 },
+      { name: "Bb", octave: 4 }, { name: "A", octave: 4 },
+      // "pa-ra-béns"
+      { name: "G", octave: 4 }, { name: "F", octave: 4 },
+      { name: "C", octave: 4 }, { name: "C", octave: 4 },
+    ],
+    4,
+  ),
+};
+
+/**
+ * Twinkle Twinkle Little Star
+ */
+export const twinkleTwinkle: Sheet = {
+  id: "twinkle-twinkle",
+  title: "Twinkle Twinkle",
+  composer: "Tradicional",
+  bpm: 90,
+  timeSignature: { beats: 4, beatValue: 4 },
+  difficulty: "easy",
+  category: "melody",
+  totalMeasures: 8,
+  notes: createQuarterNoteSequence(
+    [
+      // "Twin-kle twin-kle lit-tle star"
+      { name: "C", octave: 4 }, { name: "C", octave: 4 },
+      { name: "G", octave: 4 }, { name: "G", octave: 4 },
+      // "how I won-der what you are"
+      { name: "A", octave: 4 }, { name: "A", octave: 4 },
+      { name: "G", octave: 4 }, { name: "G", octave: 4 },
+      // "Up a-bove the world so high"
+      { name: "F", octave: 4 }, { name: "F", octave: 4 },
+      { name: "E", octave: 4 }, { name: "E", octave: 4 },
+      // "like a dia-mond in the sky"
+      { name: "D", octave: 4 }, { name: "D", octave: 4 },
+      { name: "C", octave: 4 }, { name: "C", octave: 4 },
+      // Bridge "Twin-kle twin-kle lit-tle star"
+      { name: "G", octave: 4 }, { name: "G", octave: 4 },
+      { name: "F", octave: 4 }, { name: "F", octave: 4 },
+      { name: "E", octave: 4 }, { name: "E", octave: 4 },
+      { name: "D", octave: 4 }, { name: "D", octave: 4 },
+      { name: "G", octave: 4 }, { name: "G", octave: 4 },
+      { name: "F", octave: 4 }, { name: "F", octave: 4 },
+      { name: "E", octave: 4 }, { name: "E", octave: 4 },
+      { name: "D", octave: 4 }, { name: "D", octave: 4 },
+    ],
+    4,
+  ),
+};
+
+/**
+ * When the Saints Go Marching In - Tradicional
+ */
+export const whenTheSaints: Sheet = {
+  id: "when-the-saints",
+  title: "When the Saints",
+  composer: "Tradicional",
+  bpm: 100,
+  timeSignature: { beats: 4, beatValue: 4 },
+  difficulty: "easy",
+  category: "melody",
+  totalMeasures: 8,
+  notes: [
+    // "Oh when the saints"
+    { pitch: createNote("C", 4), startBeat: 1, duration: 1, measure: 1 },
+    { pitch: createNote("E", 4), startBeat: 2, duration: 1, measure: 1 },
+    { pitch: createNote("F", 4), startBeat: 3, duration: 1, measure: 1 },
+    // "go mar-ching in"
+    { pitch: createNote("G", 4), startBeat: 4, duration: 2, measure: 2 },
+    { pitch: createNote("C", 4), startBeat: 6, duration: 1, measure: 2 },
+    { pitch: createNote("E", 4), startBeat: 7, duration: 1, measure: 2 },
+    // "oh when the saints"
+    { pitch: createNote("F", 4), startBeat: 8, duration: 1, measure: 3 },
+    { pitch: createNote("G", 4), startBeat: 9, duration: 2, measure: 3 },
+    { pitch: createNote("G", 4), startBeat: 11, duration: 1, measure: 3 },
+    // "go mar-ching in"
+    { pitch: createNote("C", 4), startBeat: 12, duration: 1, measure: 4 },
+    { pitch: createNote("E", 4), startBeat: 13, duration: 1, measure: 4 },
+    { pitch: createNote("F", 4), startBeat: 14, duration: 1, measure: 4 },
+    { pitch: createNote("G", 4), startBeat: 15, duration: 1, measure: 4 },
+    // "I want to be in that num-ber"
+    { pitch: createNote("E", 4), startBeat: 16, duration: 2, measure: 5 },
+    { pitch: createNote("C", 4), startBeat: 18, duration: 1, measure: 5 },
+    { pitch: createNote("E", 4), startBeat: 19, duration: 1, measure: 5 },
+    { pitch: createNote("D", 4), startBeat: 20, duration: 2, measure: 6 },
+    { pitch: createNote("E", 4), startBeat: 22, duration: 1, measure: 6 },
+    { pitch: createNote("D", 4), startBeat: 23, duration: 1, measure: 6 },
+    // "when the saints go mar-ching in"
+    { pitch: createNote("C", 4), startBeat: 24, duration: 2, measure: 7 },
+    { pitch: createNote("G", 4), startBeat: 26, duration: 1, measure: 7 },
+    { pitch: createNote("E", 4), startBeat: 27, duration: 1, measure: 7 },
+    { pitch: createNote("C", 4), startBeat: 28, duration: 4, measure: 8 },
+  ],
+};
+
+/**
+ * Amazing Grace - Tradicional (simplificado em 4/4)
+ */
+export const amazingGrace: Sheet = {
+  id: "amazing-grace",
+  title: "Amazing Grace",
+  composer: "Tradicional",
+  bpm: 80,
+  timeSignature: { beats: 4, beatValue: 4 },
+  difficulty: "medium",
+  category: "melody",
+  totalMeasures: 8,
+  notes: createQuarterNoteSequence(
+    [
+      // "A-ma-zing grace how sweet the sound"
+      { name: "C", octave: 4 }, { name: "F", octave: 4 },
+      { name: "F", octave: 4 }, { name: "A", octave: 4 },
+      { name: "F", octave: 4 }, { name: "A", octave: 4 },
+      { name: "C", octave: 5 }, { name: "A", octave: 4 },
+      // "that saved a wretch like me"
+      { name: "F", octave: 4 }, { name: "F", octave: 4 },
+      { name: "C", octave: 4 }, { name: "E", octave: 4 },
+      { name: "F", octave: 4 }, { name: "F", octave: 4 },
+      { name: "F", octave: 4 }, { name: "F", octave: 4 },
+      // "I once was lost but now am found"
+      { name: "F", octave: 4 }, { name: "F", octave: 4 },
+      { name: "F", octave: 4 }, { name: "A", octave: 4 },
+      { name: "F", octave: 4 }, { name: "A", octave: 4 },
+      { name: "C", octave: 5 }, { name: "A", octave: 4 },
+      // "was blind but now I see"
+      { name: "C", octave: 5 }, { name: "A", octave: 4 },
+      { name: "F", octave: 4 }, { name: "A", octave: 4 },
+      { name: "G", octave: 4 }, { name: "F", octave: 4 },
+      { name: "F", octave: 4 }, { name: "F", octave: 4 },
+    ],
+    4,
+  ),
+};
+
+/**
  * All available sheets
  */
 export const allSheets: Sheet[] = [
@@ -252,6 +413,10 @@ export const allSheets: Sheet[] = [
   rhythmExercise1,
   odeToJoySimple,
   hotCrossBuns,
+  twinkleTwinkle,
+  whenTheSaints,
+  parabens,
+  amazingGrace,
 ];
 
 /**
