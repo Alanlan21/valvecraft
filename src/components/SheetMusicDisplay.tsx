@@ -428,7 +428,12 @@ export function SheetMusicDisplay({
         <div
           id={stableId}
           ref={containerRef}
-          style={{ position: "absolute", top: 0, left: 0, willChange: "transform" }}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            willChange: "transform",
+          }}
         />
 
         {/* Timing zone — fixed in outer-relative space, centered on SPINE_FRACTION */}

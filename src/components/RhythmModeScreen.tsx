@@ -48,7 +48,10 @@ export function RhythmModeScreen({
   const [bestCombo, setBestCombo] = useState(0);
 
   // Audio
-  const { attackNote, releaseNote, playMetronomeClick } = useTrumpetAudio(trumpetType, "mono");
+  const { attackNote, releaseNote, playMetronomeClick } = useTrumpetAudio(
+    trumpetType,
+    "mono",
+  );
 
   // Playback engine
   const [playbackState, playbackControls] = usePlaybackEngine({

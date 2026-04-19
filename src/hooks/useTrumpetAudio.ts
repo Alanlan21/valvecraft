@@ -165,7 +165,10 @@ export function useTrumpetAudio(
 
         // Release any previously sustained note first
         samplerRef.current.releaseAll(now);
-        samplerRef.current.triggerAttack(concert, now + NOTE_ATTACK_OFFSET_SECONDS);
+        samplerRef.current.triggerAttack(
+          concert,
+          now + NOTE_ATTACK_OFFSET_SECONDS,
+        );
         attackedNoteRef.current = concert;
 
         // Safety cap: auto-release if the player never releases the keys
