@@ -252,7 +252,10 @@ export function SheetMusicDisplay({
       notePositionsRef.current.forEach((pos) => {
         if (pos.endX > maxNoteEndX) maxNoteEndX = pos.endX;
       });
-      const effectiveWidth = Math.max(naturalWidth, Math.ceil(maxNoteEndX + 40));
+      const effectiveWidth = Math.max(
+        naturalWidth,
+        Math.ceil(maxNoteEndX + 40),
+      );
       svgNaturalWidthRef.current = effectiveWidth;
 
       // ── Extend staff lines to effective width ─────────────────────────────
