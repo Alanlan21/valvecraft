@@ -98,6 +98,8 @@ export function SheetMusicDisplay({
   >(new Map());
   // Store refs to SVG note groups for efficient coloring
   const noteGroupsRef = useRef<Element[]>([]);
+  // Store refs to manually added name label <text> elements
+  const noteLabelElemsRef = useRef<SVGTextElement[]>([]);
   // Natural width of the SVG (set during render, read during scroll)
   const svgNaturalWidthRef = useRef<number>(0);
 
@@ -122,6 +124,7 @@ export function SheetMusicDisplay({
       div.innerHTML = "";
       notePositionsRef.current.clear();
       noteGroupsRef.current = [];
+      noteLabelElemsRef.current = [];
 
       const outerWidth = Math.max(400, Math.round(outer.clientWidth));
       const VF_HEIGHT = height;
@@ -140,14 +143,14 @@ export function SheetMusicDisplay({
       );
       const naturalWidth = leadInPx + musicWidth + 40; // trailing margin
 
-      svgNaturalWidthRef.current = naturalWidth;
-
       const renderer = new VF.Renderer(div, VF.Renderer.Backends.SVG);
       renderer.resize(naturalWidth, VF_HEIGHT);
       const context = renderer.getContext();
 
       const staveLeft = leadInPx;
-      const staveWidth = musicWidth;
+      // Stave stretches all the way to the right edge of the SVG (minus a small
+      // right margin) so the horizontal lines always cover every note.
+      const staveWidth = naturalWidth - staveLeft - 20;
 
       const stave = new VF.Stave(staveLeft, 30, staveWidth);
       stave.addClef("treble");
@@ -171,6 +174,7 @@ export function SheetMusicDisplay({
             });
             const acc = getAccidental(key);
             if (acc) vfNote.addModifier(new VF.Accidental(acc), 0);
+
             allVfNotes.push(vfNote);
             allSheetNotesFlat.push(note);
           } catch (e) {
@@ -241,11 +245,74 @@ export function SheetMusicDisplay({
         }
       });
 
+      // If any shifted note extends beyond the initially computed naturalWidth,
+      // expand the effective SVG/staff right edge so the last measure lines
+      // are always visible for every song.
+      let maxNoteEndX = 0;
+      notePositionsRef.current.forEach((pos) => {
+        if (pos.endX > maxNoteEndX) maxNoteEndX = pos.endX;
+      });
+      const effectiveWidth = Math.max(naturalWidth, Math.ceil(maxNoteEndX + 40));
+      svgNaturalWidthRef.current = effectiveWidth;
+
+      // ── Extend staff lines to effective width ─────────────────────────────
+      const svgForLines = div.querySelector("svg");
+      if (svgForLines) {
+        const lineRight = effectiveWidth - 20;
+        for (let li = 0; li < 5; li++) {
+          const lineY = stave.getYForLine(li);
+          const el = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "line",
+          );
+          el.setAttribute("x1", String(staveLeft));
+          el.setAttribute("x2", String(lineRight));
+          el.setAttribute("y1", String(lineY));
+          el.setAttribute("y2", String(lineY));
+          el.setAttribute("stroke", "#fffff0");
+          el.setAttribute("stroke-width", "1");
+          el.setAttribute("fill", "none");
+          svgForLines.appendChild(el);
+        }
+      }
+
+      // ── Manual note name labels ────────────────────────────────────────────
+      // VexFlow's Annotation doesn't render reliably for notes positioned
+      // outside the stave's drawn area (via setXShift). We insert <text>
+      // elements directly into the SVG using the notePositionsRef data which
+      // is always accurate regardless of stave bounds.
+      const svgForLabels = div.querySelector("svg");
+      if (svgForLabels) {
+        // Use the note bounding box bottom to position each label individually.
+        // This handles notes on ledger lines (e.g. C4 sits below the staff).
+        allVfNotes.forEach((vfNote, i) => {
+          const pos = notePositionsRef.current.get(i);
+          if (!pos) return;
+          const box = vfNote.getBoundingBox();
+          const labelY = box ? box.y + box.h + 13 : stave.getBottomY() + 20;
+          const cx = (pos.startX + pos.endX) / 2;
+          const t = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "text",
+          );
+          t.setAttribute("x", String(cx));
+          t.setAttribute("y", String(labelY));
+          t.setAttribute("text-anchor", "middle");
+          t.setAttribute("font-family", "Arial, sans-serif");
+          t.setAttribute("font-size", "10");
+          t.setAttribute("font-weight", "bold");
+          t.style.fill = JUDGMENT_COLORS.pending;
+          t.textContent = allSheetNotesFlat[i].pitch.name;
+          svgForLabels.appendChild(t);
+          noteLabelElemsRef.current.push(t);
+        });
+      }
+
       // Apply default styling
       const svg = div.querySelector("svg");
       if (svg) {
-        svg.setAttribute("viewBox", `0 0 ${naturalWidth} ${VF_HEIGHT}`);
-        svg.style.width = `${naturalWidth}px`;
+        svg.setAttribute("viewBox", `0 0 ${effectiveWidth} ${VF_HEIGHT}`);
+        svg.style.width = `${effectiveWidth}px`;
         svg.style.height = `${VF_HEIGHT}px`;
         svg.style.overflow = "visible";
         svg.style.display = "block";
@@ -255,11 +322,13 @@ export function SheetMusicDisplay({
           (el as SVGElement).style.stroke = "#fffff0";
           (el as SVGElement).style.strokeWidth = "1";
         });
-        svg.querySelectorAll("text").forEach((el) => {
-          el.style.fill = "#fffff0";
+        // Style VexFlow stave text (clef, time sig, etc.) — not note labels
+        svg.querySelectorAll(".vf-stave text").forEach((el) => {
+          (el as SVGTextElement).style.fill = "#fffff0";
         });
 
-        // Store note group elements and apply default color
+        // Store note group elements and apply default color to paths only
+        // (text labels are managed via noteLabelElemsRef separately)
         const groups = svg.querySelectorAll(".vf-stavenote");
         noteGroupsRef.current = Array.from(groups);
         groups.forEach((group) => {
@@ -298,6 +367,15 @@ export function SheetMusicDisplay({
         (path as SVGPathElement).style.fill = color;
         (path as SVGPathElement).style.stroke = color;
       });
+    });
+
+    // Color manual name labels to match note judgment
+    noteLabelElemsRef.current.forEach((t, i) => {
+      const result = noteResults.get(i);
+      const color = result
+        ? JUDGMENT_COLORS[result.judgment]
+        : JUDGMENT_COLORS.pending;
+      t.style.fill = color;
     });
   }, [noteResults]);
 
