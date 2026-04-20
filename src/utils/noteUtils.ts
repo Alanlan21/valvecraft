@@ -1,4 +1,10 @@
-import type { Note, GameMode, Fingering, AnswerQuality } from "../types";
+import type {
+  Note,
+  GameMode,
+  Fingering,
+  AnswerQuality,
+  TrumpetType,
+} from "../types";
 import { allNotes, fingeringMap } from "../data/fingeringMap";
 import {
   getStreakTier,
@@ -34,6 +40,82 @@ function isFlat(name: string): boolean {
   return name.includes("b") && name !== "B";
 }
 
+function getEnharmonicName(noteId: string): string | null {
+  const pairs: Record<string, string> = {
+    "G#3": "Ab",
+    Ab3: "G#",
+    "C#4": "Db",
+    Db4: "C#",
+    "D#4": "Eb",
+    Eb4: "D#",
+    "F#4": "Gb",
+    Gb4: "F#",
+    "G#4": "Ab",
+    Ab4: "G#",
+    "C#5": "Db",
+    Db5: "C#",
+    "D#5": "Eb",
+    Eb5: "D#",
+    "F#5": "Gb",
+    Gb5: "F#",
+  };
+
+  return pairs[noteId] ?? null;
+}
+
+function buildNote(name: string, octave: number): Note {
+  const baseName = name.replace("#", "").replace("b", "");
+  const accidental = name.includes("#") ? "#" : name.includes("b") ? "b" : "";
+
+  return {
+    name,
+    octave,
+    vexflowKey: `${baseName.toLowerCase()}${accidental}/${octave}`,
+    id: `${name}${octave}`,
+  };
+}
+
+export function getEnharmonicNote(note: Note): Note | null {
+  const enharmonicName = getEnharmonicName(note.id);
+  return enharmonicName ? buildNote(enharmonicName, note.octave) : null;
+}
+
+export function formatQuizNoteLabel(note: Note): string {
+  const enharmonic = getEnharmonicNote(note);
+  return enharmonic ? `${note.name} / ${enharmonic.name}` : note.name;
+}
+
+const SEMITONES_BY_NOTE: Record<string, number> = {
+  C: 0,
+  "C#": 1,
+  Db: 1,
+  D: 2,
+  "D#": 3,
+  Eb: 3,
+  E: 4,
+  F: 5,
+  "F#": 6,
+  Gb: 6,
+  G: 7,
+  "G#": 8,
+  Ab: 8,
+  A: 9,
+  Bb: 10,
+  B: 11,
+};
+
+export function getQuizDisplayFrequency(
+  note: Note,
+  trumpetType: TrumpetType,
+): number {
+  const concertSemitoneOffset = trumpetType === "Bb" ? -2 : 0;
+  const semitone = SEMITONES_BY_NOTE[note.name];
+  const midiNumber = (note.octave + 1) * 12 + semitone + concertSemitoneOffset;
+  const frequency = 440 * Math.pow(2, (midiNumber - 69) / 12);
+
+  return Math.round(frequency);
+}
+
 /**
  * Get the subset of notes matching the selected game mode.
  * Filters by range (beginner/intermediate/advanced) and
@@ -49,10 +131,10 @@ export function getNotesForMode(mode: GameMode): Note[] {
   switch (mode.noteType) {
     case "natural":
       return rangeNotes.filter((n) => isNatural(n.name));
-    case "sharp":
-      return rangeNotes.filter((n) => isNatural(n.name) || isSharp(n.name));
-    case "flat":
-      return rangeNotes.filter((n) => isNatural(n.name) || isFlat(n.name));
+    case "accidental":
+      return rangeNotes.filter(
+        (n) => isNatural(n.name) || isSharp(n.name) || isFlat(n.name),
+      );
     case "chromatic":
       return rangeNotes;
   }

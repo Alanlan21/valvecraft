@@ -1,12 +1,33 @@
 import { useEffect, useRef, useId } from "react";
 import * as VF from "vexflow";
-import type { Note } from "../types";
+import type { Note, TrumpetType } from "../types";
+import {
+  formatQuizNoteLabel,
+  getEnharmonicNote,
+  getQuizDisplayFrequency,
+} from "../utils/noteUtils";
 
 interface StaffDisplayProps {
   note: Note | null;
+  trumpetType: TrumpetType;
 }
 
-export function StaffDisplay({ note }: StaffDisplayProps) {
+function createStaveNote(key: string): VF.StaveNote {
+  const vfNote = new VF.StaveNote({ keys: [key], duration: "w" });
+  const accidental = key.match(/^[a-g]([#b]+)\//i)?.[1];
+
+  if (accidental) {
+    try {
+      vfNote.addModifier(new VF.Accidental(accidental), 0);
+    } catch {
+      // Ignore API variation issues and keep the note visible.
+    }
+  }
+
+  return vfNote;
+}
+
+export function StaffDisplay({ note, trumpetType }: StaffDisplayProps) {
   const containerId = useId();
   const stableId = `vf-staff-${containerId.replace(/:/g, "")}`;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -45,25 +66,19 @@ export function StaffDisplay({ note }: StaffDisplayProps) {
       stave.addClef("treble");
       stave.setContext(context).draw();
 
-      // Create the visible note
-      const key = note.vexflowKey; // already in 'c/4' or 'c#/4' form
-      const vfNote = new VF.StaveNote({ keys: [key], duration: "w" });
-      // Add accidental if present in key (format: "noteLetter[accidental]/octave", e.g. "bb/3")
-      // Capture only the accidental chars AFTER the first letter to avoid double-counting note names.
-      const acc = key.match(/^[a-g]([#b]+)\//i)?.[1];
-      if (acc) {
-        try {
-          // VexFlow v4 uses addModifier to attach accidentals
-          vfNote.addModifier(new VF.Accidental(acc), 0);
-        } catch (e) {
-          // ignore if API differs
-        }
-      }
+      const enharmonicNote = getEnharmonicNote(note);
+      const notesToRender = [note, enharmonicNote].filter(
+        (value): value is Note => value !== null,
+      );
+      const vfNotes = notesToRender.map((item) =>
+        createStaveNote(item.vexflowKey),
+      );
 
       // Build voice + formatter
       const voice = new VF.Voice({ num_beats: 4, beat_value: 4 });
-      voice.addTickables([vfNote]);
-      new VF.Formatter().joinVoices([voice]).format([voice], staveWidth - 20);
+      voice.setStrict(false);
+      voice.addTickables(vfNotes);
+      new VF.Formatter().joinVoices([voice]).format([voice], staveWidth - 80);
       voice.draw(context, stave);
 
       // Style SVG to match theme and ensure it scales
@@ -116,9 +131,24 @@ export function StaffDisplay({ note }: StaffDisplayProps) {
     };
   }, [note, stableId]);
 
+  const noteHeading = note ? formatQuizNoteLabel(note) : "";
+  const frequency = note ? getQuizDisplayFrequency(note, trumpetType) : null;
+
   return (
     <div className="flex items-center justify-center">
-      <div className="rounded-xl bg-[#16213e] p-4 shadow-lg shadow-black/30 w-full max-w-[560px]">
+      <div className="w-full max-w-140 rounded-xl bg-[#16213e] p-4 shadow-lg shadow-black/30">
+        {note && (
+          <div className="flex flex-wrap items-end justify-center gap-x-3 gap-y-1 pb-3 text-center">
+            <span className="text-[clamp(1.5rem,3vw,2.35rem)] font-medium tracking-[0.02em] text-[#fffff0]">
+              {noteHeading}
+            </span>
+            {frequency !== null && (
+              <span className="pb-0.5 text-sm font-normal tracking-[0.08em] text-[#fffff0]/55 sm:text-base">
+                ({frequency}Hz)
+              </span>
+            )}
+          </div>
+        )}
         <div id={stableId} ref={containerRef} className="w-full" />
       </div>
     </div>

@@ -39,8 +39,11 @@ const RANGE_OPTIONS: { value: RangeLevel; label: string; desc: string }[] = [
 
 const TYPE_OPTIONS: { value: NoteType; label: string; desc: string }[] = [
   { value: "natural", label: "Naturais", desc: "Apenas notas sem acidente" },
-  { value: "flat", label: "Bemóis", desc: "Naturais + bemóis" },
-  { value: "sharp", label: "Sustenidos", desc: "Naturais + sustenidos" },
+  {
+    value: "accidental",
+    label: "Acidentes",
+    desc: "Naturais + bemóis + sustenidos",
+  },
   { value: "chromatic", label: "Cromático", desc: "Todas as notas" },
 ];
 
@@ -295,7 +298,7 @@ export function ModeSelector({
               <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#cd7f32]">
                 Tipo de Notas
               </h2>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 {TYPE_OPTIONS.map((opt) => (
                   <button
                     key={opt.value}

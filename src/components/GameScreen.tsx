@@ -181,7 +181,7 @@ export function GameScreen({
       )}
 
       {/* Staff display — shown in sync with audio */}
-      <StaffDisplay note={displayNote} />
+      <StaffDisplay note={displayNote} trumpetType={mode.trumpetType} />
 
       {/* Valve indicator */}
       <div className="mt-4">

@@ -78,6 +78,9 @@ const MIN_PX_PER_BEAT = 60;
 // Fraction of the outer container width where the timing spine is fixed.
 // 0.35 = 35% from the left edge of the outer div.
 const SPINE_FRACTION = 0.35;
+const NOTE_LABEL_FONT_FAMILY = "Inter, system-ui, sans-serif";
+const NOTE_LABEL_FONT_SIZE = "12";
+const NOTE_LABEL_FONT_WEIGHT = "700";
 
 export function SheetMusicDisplay({
   sheet,
@@ -301,9 +304,9 @@ export function SheetMusicDisplay({
           t.setAttribute("x", String(cx));
           t.setAttribute("y", String(labelY));
           t.setAttribute("text-anchor", "middle");
-          t.setAttribute("font-family", "Arial, sans-serif");
-          t.setAttribute("font-size", "10");
-          t.setAttribute("font-weight", "bold");
+          t.setAttribute("font-family", NOTE_LABEL_FONT_FAMILY);
+          t.setAttribute("font-size", NOTE_LABEL_FONT_SIZE);
+          t.setAttribute("font-weight", NOTE_LABEL_FONT_WEIGHT);
           t.style.fill = JUDGMENT_COLORS.pending;
           t.textContent = allSheetNotesFlat[i].pitch.name;
           svgForLabels.appendChild(t);
