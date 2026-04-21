@@ -50,9 +50,8 @@ export function RhythmModeScreen({
   const [score, setScore] = useState(0);
   const [combo, setCombo] = useState(0);
   const [bestCombo, setBestCombo] = useState(0);
-  const [sessionResult, setSessionResult] = useState<RhythmSessionResult | null>(
-    null,
-  );
+  const [sessionResult, setSessionResult] =
+    useState<RhythmSessionResult | null>(null);
 
   // Audio
   const { attackNote, releaseNote, playMetronomeClick } = useTrumpetAudio(

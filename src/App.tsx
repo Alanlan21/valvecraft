@@ -113,7 +113,9 @@ function App() {
         <div className="fixed inset-x-0 top-4 z-50 flex justify-center px-4">
           <div className="flex max-w-3xl items-start gap-3 rounded-xl border border-amber-500/30 bg-[#16213e]/95 px-4 py-3 text-sm text-[#fffff0] shadow-xl shadow-black/40 backdrop-blur">
             <span className="mt-0.5 text-amber-400">Aviso</span>
-            <span className="flex-1 text-[#fffff0]/85">{appNotice.message}</span>
+            <span className="flex-1 text-[#fffff0]/85">
+              {appNotice.message}
+            </span>
             <button
               type="button"
               onClick={() => setAppNotice(null)}
