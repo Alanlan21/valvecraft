@@ -137,6 +137,21 @@ export interface RhythmSessionResult {
   totalTimeMs: number;
 }
 
+export interface RhythmStoredResult {
+  /** Best score achieved on this sheet */
+  bestScore: number;
+  /** Best accuracy achieved on this sheet */
+  bestAccuracy: number;
+  /** Best combo achieved on this sheet */
+  bestCombo: number;
+  /** Number of attempts recorded */
+  attempts: number;
+  /** Timestamp of the latest playthrough */
+  lastPlayedAt: number;
+}
+
+export type RhythmStoredResults = Record<string, RhythmStoredResult>;
+
 /**
  * Timing windows for hit detection (in beats)
  * At 120 BPM, 0.1 beats ≈ 50ms

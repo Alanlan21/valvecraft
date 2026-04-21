@@ -3,7 +3,6 @@ import * as VF from "vexflow";
 import type { Note, TrumpetType } from "../types";
 import {
   formatQuizNoteLabel,
-  getEnharmonicNote,
   getQuizDisplayFrequency,
 } from "../utils/noteUtils";
 
@@ -66,19 +65,12 @@ export function StaffDisplay({ note, trumpetType }: StaffDisplayProps) {
       stave.addClef("treble");
       stave.setContext(context).draw();
 
-      const enharmonicNote = getEnharmonicNote(note);
-      const notesToRender = [note, enharmonicNote].filter(
-        (value): value is Note => value !== null,
-      );
-      const vfNotes = notesToRender.map((item) =>
-        createStaveNote(item.vexflowKey),
-      );
+      const vfNote = createStaveNote(note.vexflowKey);
 
       // Build voice + formatter
       const voice = new VF.Voice({ num_beats: 4, beat_value: 4 });
-      voice.setStrict(false);
-      voice.addTickables(vfNotes);
-      new VF.Formatter().joinVoices([voice]).format([voice], staveWidth - 80);
+      voice.addTickables([vfNote]);
+      new VF.Formatter().joinVoices([voice]).format([voice], staveWidth - 20);
       voice.draw(context, stave);
 
       // Style SVG to match theme and ensure it scales

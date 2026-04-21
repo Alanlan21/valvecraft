@@ -11,6 +11,7 @@ import { useTrumpetAudio } from "../hooks/useTrumpetAudio";
 import { SheetMusicDisplay } from "./SheetMusicDisplay";
 import { ValveIndicator } from "./ValveIndicator";
 import { DEFAULT_CONTROL_BINDINGS } from "../utils/controlBindings";
+import { normalizeKeyboardEventCode } from "../utils/controlBindings";
 
 interface RhythmModeScreenProps {
   /** The sheet to play */
@@ -23,6 +24,8 @@ interface RhythmModeScreenProps {
   onBack: () => void;
   /** Callback when session completes with results */
   onComplete: (result: RhythmSessionResult) => void;
+  /** Non-blocking audio issue reporter */
+  onAudioIssue?: (message: string) => void;
 }
 
 type GamePhase = "ready" | "countdown" | "playing" | "paused" | "complete";
@@ -33,6 +36,7 @@ export function RhythmModeScreen({
   controlBindings = DEFAULT_CONTROL_BINDINGS,
   onBack,
   onComplete,
+  onAudioIssue,
 }: RhythmModeScreenProps) {
   // Game phase
   const [phase, setPhase] = useState<GamePhase>("ready");
@@ -46,11 +50,15 @@ export function RhythmModeScreen({
   const [score, setScore] = useState(0);
   const [combo, setCombo] = useState(0);
   const [bestCombo, setBestCombo] = useState(0);
+  const [sessionResult, setSessionResult] = useState<RhythmSessionResult | null>(
+    null,
+  );
 
   // Audio
   const { attackNote, releaseNote, playMetronomeClick } = useTrumpetAudio(
     trumpetType,
     "mono",
+    onAudioIssue,
   );
 
   // Playback engine
@@ -60,13 +68,14 @@ export function RhythmModeScreen({
     onComplete: () => {
       setPhase("complete");
       const results = hitActions.getAllResults();
-      const sessionResult = calculateSessionResults(
+      const completedSession = calculateSessionResults(
         sheet,
         results,
         Date.now() - startTimeRef.current,
       );
-      sessionResult.bestCombo = bestCombo;
-      onComplete(sessionResult);
+      completedSession.bestCombo = bestCombo;
+      setSessionResult(completedSession);
+      onComplete(completedSession);
     },
     onBeat: (beat, isDownbeat) => {
       // Play metronome during count-in
@@ -112,21 +121,23 @@ export function RhythmModeScreen({
   );
 
   // Build current fingering from input.
-  // For rhythm mode we require an explicit 'open' input (Space) to
-  // register an open fingering. If no valves are pressed and Space is
-  // not held, we treat it as "no input" (null) so notes that expect
-  // open fingering won't fire unless the player explicitly presses Space.
+  // For rhythm mode we require an explicit 'open' input (submit binding) to
+  // register an open fingering. If no valves are pressed and the submit key
+  // is not held, we treat it as "no input" (null) so open notes only fire
+  // when the player explicitly presses the configured key.
   const [openPressed, setOpenPressed] = useState(false);
+  const openBindingCode = controlBindings.submit.code;
+  const openBindingLabel = controlBindings.submit.label;
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
-      if (e.code === "Space") {
+      if (normalizeKeyboardEventCode(e) === openBindingCode) {
         if (!e.repeat) setOpenPressed(true);
         e.preventDefault();
       }
     }
     function onKeyUp(e: KeyboardEvent) {
-      if (e.code === "Space") {
+      if (normalizeKeyboardEventCode(e) === openBindingCode) {
         setOpenPressed(false);
         e.preventDefault();
       }
@@ -138,7 +149,7 @@ export function RhythmModeScreen({
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
     };
-  }, []);
+  }, [openBindingCode]);
 
   const anyValvePressed =
     currentInput.valves.some((v) => v) || currentInput.slide;
@@ -212,6 +223,7 @@ export function RhythmModeScreen({
     setScore(0);
     setCombo(0);
     setBestCombo(0);
+    setSessionResult(null);
     setNoteResults(new Map());
     hitActions.reset();
   };
@@ -236,6 +248,7 @@ export function RhythmModeScreen({
     setScore(0);
     setCombo(0);
     setBestCombo(0);
+    setSessionResult(null);
     hitActions.reset();
     setPhase("ready");
   };
@@ -354,6 +367,42 @@ export function RhythmModeScreen({
             <div className="text-3xl font-bold text-green-400 mb-4">
               Completo!
             </div>
+            {sessionResult && (
+              <div className="mb-4 grid grid-cols-2 gap-3 rounded-xl bg-slate-800/40 p-4 text-sm text-slate-300 sm:grid-cols-4">
+                <div>
+                  <div className="text-xs uppercase tracking-wide text-slate-500">
+                    Pontos
+                  </div>
+                  <div className="text-lg font-bold text-white">
+                    {sessionResult.score}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs uppercase tracking-wide text-slate-500">
+                    Precisao
+                  </div>
+                  <div className="text-lg font-bold text-emerald-400">
+                    {sessionResult.accuracy.toFixed(1)}%
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs uppercase tracking-wide text-slate-500">
+                    Dedilhado
+                  </div>
+                  <div className="text-lg font-bold text-amber-400">
+                    {sessionResult.judgments.wrongFingering}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs uppercase tracking-wide text-slate-500">
+                    Combo
+                  </div>
+                  <div className="text-lg font-bold text-white">
+                    {sessionResult.bestCombo}x
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="flex gap-4 justify-center">
               <button
                 onClick={handleRestart}
@@ -376,16 +425,26 @@ export function RhythmModeScreen({
       {(phase === "ready" || phase === "paused") && (
         <div className="text-center text-sm text-slate-500">
           Use as teclas{" "}
-          <kbd className="px-2 py-0.5 bg-slate-700 rounded">Q</kbd>{" "}
-          <kbd className="px-2 py-0.5 bg-slate-700 rounded">W</kbd>{" "}
-          <kbd className="px-2 py-0.5 bg-slate-700 rounded">E</kbd> para as
-          válvulas e{" "}
-          <kbd className="px-2 py-0.5 bg-slate-700 rounded">Shift</kbd> para o
-          slide
+          <kbd className="px-2 py-0.5 bg-slate-700 rounded">
+            {controlBindings.valve1.label}
+          </kbd>{" "}
+          <kbd className="px-2 py-0.5 bg-slate-700 rounded">
+            {controlBindings.valve2.label}
+          </kbd>{" "}
+          <kbd className="px-2 py-0.5 bg-slate-700 rounded">
+            {controlBindings.valve3.label}
+          </kbd>{" "}
+          para as válvulas e{" "}
+          <kbd className="px-2 py-0.5 bg-slate-700 rounded">
+            {controlBindings.slide.label}
+          </kbd>{" "}
+          para o slide
           <div className="mt-2 text-sm text-slate-400">
             Ou pressione{" "}
-            <kbd className="px-2 py-0.5 bg-slate-700 rounded">Espaço</kbd> para
-            nota aberta
+            <kbd className="px-2 py-0.5 bg-slate-700 rounded">
+              {openBindingLabel}
+            </kbd>{" "}
+            para nota aberta
           </div>
         </div>
       )}

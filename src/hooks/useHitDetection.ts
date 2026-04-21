@@ -9,11 +9,10 @@ import type {
 import { fingeringMap } from "../data/fingeringMap";
 
 export const TIMING_WINDOWS_VALUES = {
-  // Janela de detecção: ±0.1 beats. A zona visual no SheetMusicDisplay
-  // é maior (±0.3) para avisar antecipadamente — só o centro verde detecta.
-  perfect: 0.08,
-  good: 0.2,
-  miss: 0.1,
+  // Janela de acerto mais generosa para priorizar treino educativo.
+  perfect: 0.1,
+  good: 0.22,
+  miss: 0.34,
 } as const;
 
 export const JUDGMENT_POINTS_VALUES = {
@@ -49,9 +48,10 @@ function fingeringsMatch(a: Fingering, b: Fingering): boolean {
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function getJudgment(_timingOffset: number): HitJudgment {
-  return "perfect"; // all hits inside the window are perfect
+function getJudgment(timingOffset: number): HitJudgment {
+  return Math.abs(timingOffset) <= TIMING_WINDOWS_VALUES.good
+    ? "perfect"
+    : "miss";
 }
 
 /**
@@ -71,6 +71,7 @@ export function useHitDetection({
 }: UseHitDetectionOptions): HitDetectionActions {
   const processedRef = useRef<Set<number>>(new Set());
   const resultsRef = useRef<Map<number, NoteHitResult>>(new Map());
+  const wrongAttemptedRef = useRef<Set<number>>(new Set());
 
   const checkNotes = useCallback((): NoteHitResult[] => {
     if (!isPlaying) return [];
@@ -86,39 +87,47 @@ export function useHitDetection({
 
       const offset = currentBeat - note.startBeat;
 
-      // Hit window: exactly ±perfect around the note beat.
-      // Yellow warning zone is visual-only; detection never fires there.
+      // Allow a forgiving educational window around the beat.
       if (
-        offset >= -TIMING_WINDOWS_VALUES.perfect &&
-        offset <= TIMING_WINDOWS_VALUES.perfect
+        offset >= -TIMING_WINDOWS_VALUES.good &&
+        offset <= TIMING_WINDOWS_VALUES.good
       ) {
         if (currentFingering && fingeringsMatch(currentFingering, expected)) {
           const judgment = getJudgment(offset);
-          const result: NoteHitResult = {
-            note,
-            noteIndex: i,
-            judgment,
-            timingOffset: offset,
-            points: JUDGMENT_POINTS_VALUES[judgment],
-          };
-          processedRef.current.add(i);
-          resultsRef.current.set(i, result);
-          fired.push(result);
-          onNoteResult?.(result);
+          if (judgment !== "miss") {
+            const result: NoteHitResult = {
+              note,
+              noteIndex: i,
+              judgment,
+              timingOffset: offset,
+              points: JUDGMENT_POINTS_VALUES[judgment],
+            };
+            processedRef.current.add(i);
+            wrongAttemptedRef.current.delete(i);
+            resultsRef.current.set(i, result);
+            fired.push(result);
+            onNoteResult?.(result);
+          }
+        } else if (currentFingering) {
+          wrongAttemptedRef.current.add(i);
         }
         continue;
       }
 
-      // Past the perfect window = miss
-      if (offset > TIMING_WINDOWS_VALUES.perfect) {
+      // After the full late window, finalize the note.
+      if (offset > TIMING_WINDOWS_VALUES.miss) {
+        const judgment = wrongAttemptedRef.current.has(i)
+          ? "wrong_fingering"
+          : "miss";
         const result: NoteHitResult = {
           note,
           noteIndex: i,
-          judgment: "miss",
+          judgment,
           timingOffset: offset,
-          points: 0,
+          points: JUDGMENT_POINTS_VALUES[judgment],
         };
         processedRef.current.add(i);
+        wrongAttemptedRef.current.delete(i);
         resultsRef.current.set(i, result);
         fired.push(result);
         onNoteResult?.(result);
@@ -131,6 +140,7 @@ export function useHitDetection({
   const reset = useCallback(() => {
     processedRef.current = new Set();
     resultsRef.current = new Map();
+    wrongAttemptedRef.current = new Set();
   }, []);
 
   const getAllResults = useCallback(() => new Map(resultsRef.current), []);

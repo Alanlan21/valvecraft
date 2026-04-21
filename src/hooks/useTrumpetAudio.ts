@@ -46,10 +46,14 @@ function isAudioOff(modeRef: { current: AudioMode }) {
 export function useTrumpetAudio(
   trumpetType: TrumpetType = "Bb",
   audioMode: AudioMode = "mono",
+  onAudioIssue?: (message: string) => void,
 ) {
   const samplerRef = useRef<Tone.Sampler | null>(null);
   const loadedRef = useRef(false);
   const playTokenRef = useRef(0);
+  const lastIssueRef = useRef<string | null>(null);
+  const onAudioIssueRef = useRef(onAudioIssue);
+  onAudioIssueRef.current = onAudioIssue;
   const audioModeRef = useRef(audioMode);
   audioModeRef.current = audioMode;
   // Track the currently attacked note so releaseNote can target it
@@ -57,25 +61,46 @@ export function useTrumpetAudio(
   // Auto-release timer to cap sustain duration
   const sustainTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const reportAudioIssue = useCallback((message: string) => {
+    if (lastIssueRef.current === message) return;
+    lastIssueRef.current = message;
+    onAudioIssueRef.current?.(message);
+  }, []);
+
+  const clearAudioIssue = useCallback(() => {
+    lastIssueRef.current = null;
+  }, []);
+
   useEffect(() => {
+    const loadWarningTimer = window.setTimeout(() => {
+      if (!loadedRef.current && !isAudioOff(audioModeRef)) {
+        reportAudioIssue(
+          "Os samples do trompete ainda nao carregaram. O jogo continua, mas o som pode falhar temporariamente.",
+        );
+      }
+    }, 4000);
+
     const sampler = new Tone.Sampler({
       urls: TRUMPET_SAMPLES,
       release: 0.04,
       onload: () => {
         loadedRef.current = true;
+        window.clearTimeout(loadWarningTimer);
+        clearAudioIssue();
       },
     }).toDestination();
 
     samplerRef.current = sampler;
 
     return () => {
+      window.clearTimeout(loadWarningTimer);
       playTokenRef.current += 1;
       if (sustainTimerRef.current) clearTimeout(sustainTimerRef.current);
       sampler.dispose();
       samplerRef.current = null;
       loadedRef.current = false;
     };
-  }, []);
+  }, [clearAudioIssue, reportAudioIssue]);
 
   const playNote = useCallback(
     async (noteId: string) => {
@@ -114,11 +139,14 @@ export function useTrumpetAudio(
           NOTE_DURATION_SECONDS,
           now + NOTE_ATTACK_OFFSET_SECONDS,
         );
+        clearAudioIssue();
       } catch {
-        // Audio can be blocked by the browser before user interaction.
+        reportAudioIssue(
+          "O navegador bloqueou o audio ou o dispositivo nao respondeu. Toque em um botao da tela para tentar novamente.",
+        );
       }
     },
-    [trumpetType],
+    [clearAudioIssue, reportAudioIssue, trumpetType],
   );
 
   /**
@@ -170,6 +198,7 @@ export function useTrumpetAudio(
           now + NOTE_ATTACK_OFFSET_SECONDS,
         );
         attackedNoteRef.current = concert;
+        clearAudioIssue();
 
         // Safety cap: auto-release if the player never releases the keys
         sustainTimerRef.current = setTimeout(() => {
@@ -178,10 +207,12 @@ export function useTrumpetAudio(
           attackedNoteRef.current = null;
         }, MAX_SUSTAIN_SECONDS * 1000);
       } catch {
-        // Audio can be blocked by the browser before user interaction.
+        reportAudioIssue(
+          "O navegador bloqueou o audio ou o dispositivo nao respondeu. Toque em um botao da tela para tentar novamente.",
+        );
       }
     },
-    [trumpetType],
+    [clearAudioIssue, reportAudioIssue, trumpetType],
   );
 
   /**
@@ -217,10 +248,13 @@ export function useTrumpetAudio(
 
       synth.triggerAttackRelease("C2", "16n");
       setTimeout(() => synth.dispose(), SYNTH_DISPOSE_DELAY_MS);
+      clearAudioIssue();
     } catch {
-      // Audio can be blocked by the browser before user interaction.
+      reportAudioIssue(
+        "O navegador bloqueou o audio ou o dispositivo nao respondeu. Toque em um botao da tela para tentar novamente.",
+      );
     }
-  }, []);
+  }, [clearAudioIssue, reportAudioIssue]);
 
   const playMetronomeClick = useCallback(
     async (isDownbeat: boolean = false) => {
@@ -244,11 +278,14 @@ export function useTrumpetAudio(
         const note = isDownbeat ? "G5" : "C5";
         synth.triggerAttackRelease(note, "32n");
         setTimeout(() => synth.dispose(), SYNTH_DISPOSE_DELAY_MS);
+        clearAudioIssue();
       } catch {
-        // Audio can be blocked by the browser before user interaction.
+        reportAudioIssue(
+          "O navegador bloqueou o audio ou o dispositivo nao respondeu. Toque em um botao da tela para tentar novamente.",
+        );
       }
     },
-    [],
+    [clearAudioIssue, reportAudioIssue],
   );
 
   return { playNote, attackNote, releaseNote, playError, playMetronomeClick };

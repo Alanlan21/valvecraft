@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type {
   AudioMode,
   GameMode,
@@ -6,6 +6,7 @@ import type {
   TrumpetType,
   Sheet,
   RhythmSessionResult,
+  RhythmStoredResults,
 } from "./types";
 import { useControlBindings } from "./hooks/useControlBindings";
 import { useLocalStorage } from "./hooks/useLocalStorage";
@@ -28,11 +29,39 @@ function App() {
     "valvecraft:audioMode",
     "mono",
   );
+  const [rhythmBestResults, setRhythmBestResults] =
+    useLocalStorage<RhythmStoredResults>("valvecraft:rhythmBestResults", {});
+  const [appNotice, setAppNotice] = useState<{
+    message: string;
+    persistent: boolean;
+  } | null>(null);
   const {
     bindings: controlBindings,
     setBindings: setControlBindings,
     resetBindings: resetControlBindings,
   } = useControlBindings();
+
+  const pushNotice = useCallback((message: string, persistent = false) => {
+    setAppNotice({ message, persistent });
+  }, []);
+
+  useEffect(() => {
+    if (!appNotice || appNotice.persistent) return;
+    const timer = window.setTimeout(() => setAppNotice(null), 6000);
+    return () => window.clearTimeout(timer);
+  }, [appNotice]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("valvecraft:storage-check", "ok");
+      localStorage.removeItem("valvecraft:storage-check");
+    } catch {
+      pushNotice(
+        "Nao foi possivel acessar o armazenamento local. Seus recordes nao serao salvos neste navegador.",
+        true,
+      );
+    }
+  }, [pushNotice]);
 
   function handleStart(selectedMode: GameMode) {
     setMode(selectedMode);
@@ -51,8 +80,20 @@ function App() {
   }
 
   function handleRhythmComplete(result: RhythmSessionResult) {
-    // TODO: Save rhythm mode scores
-    console.log("Rhythm session complete:", result);
+    setRhythmBestResults((prev) => {
+      const current = prev[result.sheet.id];
+
+      return {
+        ...prev,
+        [result.sheet.id]: {
+          bestScore: Math.max(current?.bestScore ?? 0, result.score),
+          bestAccuracy: Math.max(current?.bestAccuracy ?? 0, result.accuracy),
+          bestCombo: Math.max(current?.bestCombo ?? 0, result.bestCombo),
+          attempts: (current?.attempts ?? 0) + 1,
+          lastPlayedAt: Date.now(),
+        },
+      };
+    });
   }
 
   function handleExit() {
@@ -68,6 +109,22 @@ function App() {
 
   return (
     <div className="min-h-screen bg-[#1a1a2e] text-[#fffff0]">
+      {appNotice && (
+        <div className="fixed inset-x-0 top-4 z-50 flex justify-center px-4">
+          <div className="flex max-w-3xl items-start gap-3 rounded-xl border border-amber-500/30 bg-[#16213e]/95 px-4 py-3 text-sm text-[#fffff0] shadow-xl shadow-black/40 backdrop-blur">
+            <span className="mt-0.5 text-amber-400">Aviso</span>
+            <span className="flex-1 text-[#fffff0]/85">{appNotice.message}</span>
+            <button
+              type="button"
+              onClick={() => setAppNotice(null)}
+              className="text-[#fffff0]/45 transition-colors hover:text-[#fffff0]/80"
+            >
+              Fechar
+            </button>
+          </div>
+        </div>
+      )}
+
       {screen === "menu" && (
         <div className="flex min-h-screen flex-col items-center justify-center px-4 py-8">
           <ModeSelector
@@ -106,6 +163,7 @@ function App() {
           controlBindings={controlBindings}
           mode={mode}
           onExit={handleExit}
+          onAudioIssue={pushNotice}
           onScoreUpdate={(score, streak) => {
             if (score > highScore) setHighScore(score);
             if (streak > bestStreak) setBestStreak(streak);
@@ -115,7 +173,11 @@ function App() {
 
       {screen === "rhythm-select" && (
         <div className="flex min-h-screen flex-col items-center justify-center px-4 py-8">
-          <SheetSelector onSelect={handleSheetSelect} onBack={handleExit} />
+          <SheetSelector
+            onSelect={handleSheetSelect}
+            onBack={handleExit}
+            bestResults={rhythmBestResults}
+          />
         </div>
       )}
 
@@ -124,8 +186,10 @@ function App() {
           <RhythmModeScreen
             sheet={selectedSheet}
             trumpetType={trumpetType}
+            controlBindings={controlBindings}
             onBack={handleBackToSheetSelect}
             onComplete={handleRhythmComplete}
+            onAudioIssue={pushNotice}
           />
         </div>
       )}

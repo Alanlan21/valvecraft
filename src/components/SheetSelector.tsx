@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Sheet } from "../types/sheet";
+import type { Sheet, RhythmStoredResults } from "../types/sheet";
 import { allSheets } from "../data/sheets";
 
 interface SheetSelectorProps {
@@ -7,6 +7,8 @@ interface SheetSelectorProps {
   onSelect: (sheet: Sheet) => void;
   /** Callback to go back */
   onBack: () => void;
+  /** Persisted best results per sheet */
+  bestResults?: RhythmStoredResults;
 }
 
 type FilterCategory = "all" | Sheet["category"];
@@ -31,7 +33,11 @@ const DIFFICULTY_COLORS: Record<Sheet["difficulty"], string> = {
   hard: "bg-red-500/20 text-red-400 border-red-500/30",
 };
 
-export function SheetSelector({ onSelect, onBack }: SheetSelectorProps) {
+export function SheetSelector({
+  onSelect,
+  onBack,
+  bestResults = {},
+}: SheetSelectorProps) {
   const [categoryFilter, setCategoryFilter] = useState<FilterCategory>("all");
   const [difficultyFilter, setDifficultyFilter] =
     useState<FilterDifficulty>("all");
@@ -125,7 +131,12 @@ export function SheetSelector({ onSelect, onBack }: SheetSelectorProps) {
       {/* Sheet list */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {filteredSheets.map((sheet) => (
-          <SheetCard key={sheet.id} sheet={sheet} onSelect={onSelect} />
+          <SheetCard
+            key={sheet.id}
+            sheet={sheet}
+            onSelect={onSelect}
+            bestResult={bestResults[sheet.id]}
+          />
         ))}
       </div>
 
@@ -162,9 +173,10 @@ function FilterButton({ active, onClick, children }: FilterButtonProps) {
 interface SheetCardProps {
   sheet: Sheet;
   onSelect: (sheet: Sheet) => void;
+  bestResult?: RhythmStoredResults[string];
 }
 
-function SheetCard({ sheet, onSelect }: SheetCardProps) {
+function SheetCard({ sheet, onSelect, bestResult }: SheetCardProps) {
   return (
     <button
       onClick={() => onSelect(sheet)}
@@ -209,6 +221,20 @@ function SheetCard({ sheet, onSelect }: SheetCardProps) {
         <span>{sheet.notes.length} notas</span>
         <span>{sheet.totalMeasures} compassos</span>
       </div>
+
+      {bestResult && (
+        <div className="mt-4 rounded-lg border border-emerald-500/20 bg-emerald-500/8 p-3 text-xs text-slate-300">
+          <div className="mb-2 font-semibold uppercase tracking-wide text-emerald-400">
+            Melhor execucao
+          </div>
+          <div className="flex flex-wrap gap-x-4 gap-y-1">
+            <span>{bestResult.bestScore} pts</span>
+            <span>{bestResult.bestAccuracy.toFixed(1)}% precisao</span>
+            <span>{bestResult.bestCombo}x combo</span>
+            <span>{bestResult.attempts} tentativas</span>
+          </div>
+        </div>
+      )}
     </button>
   );
 }

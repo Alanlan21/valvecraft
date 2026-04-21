@@ -17,6 +17,7 @@ interface GameScreenProps {
   controlBindings: ControlBindings;
   mode: GameMode;
   onExit: () => void;
+  onAudioIssue?: (message: string) => void;
   onScoreUpdate?: (score: number, streak: number) => void;
 }
 
@@ -25,6 +26,7 @@ export function GameScreen({
   controlBindings,
   mode,
   onExit,
+  onAudioIssue,
   onScoreUpdate,
 }: GameScreenProps) {
   const engine = useGameEngine();
@@ -44,7 +46,11 @@ export function GameScreen({
     timeLeftMs,
     totalAnswers,
   } = engine;
-  const { playNote, playError } = useTrumpetAudio(mode.trumpetType, audioMode);
+  const { playNote, playError } = useTrumpetAudio(
+    mode.trumpetType,
+    audioMode,
+    onAudioIssue,
+  );
 
   // Guard: block submissions while feedback is showing
   const handleSubmit = useCallback(
