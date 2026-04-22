@@ -179,6 +179,7 @@ function App() {
             onSelect={handleSheetSelect}
             onBack={handleExit}
             bestResults={rhythmBestResults}
+            controlBindings={controlBindings}
           />
         </div>
       )}

@@ -1,6 +1,8 @@
 import { useState } from "react";
+import type { ControlBindings } from "../types";
 import type { Sheet, RhythmStoredResults } from "../types/sheet";
 import { allSheets } from "../data/sheets";
+import { DEFAULT_CONTROL_BINDINGS } from "../utils/controlBindings";
 
 interface SheetSelectorProps {
   /** Callback when a sheet is selected */
@@ -9,6 +11,8 @@ interface SheetSelectorProps {
   onBack: () => void;
   /** Persisted best results per sheet */
   bestResults?: RhythmStoredResults;
+  /** Active control bindings shown as reminder */
+  controlBindings?: ControlBindings;
 }
 
 type FilterCategory = "all" | Sheet["category"];
@@ -37,6 +41,7 @@ export function SheetSelector({
   onSelect,
   onBack,
   bestResults = {},
+  controlBindings = DEFAULT_CONTROL_BINDINGS,
 }: SheetSelectorProps) {
   const [categoryFilter, setCategoryFilter] = useState<FilterCategory>("all");
   const [difficultyFilter, setDifficultyFilter] =
@@ -75,6 +80,28 @@ export function SheetSelector({
       <div className="text-center text-slate-400 max-w-lg mx-auto">
         Escolha um exercício ou música para praticar. O playhead passará pelas
         notas — toque a digitação correta no momento certo!
+      </div>
+
+      <div className="mx-auto w-full max-w-3xl rounded-xl border border-slate-700 bg-slate-800/40 px-4 py-3 text-center text-sm text-slate-300">
+        <span className="text-slate-400">Bindings atuais:</span>{" "}
+        <kbd className="rounded bg-slate-700 px-2 py-0.5 text-slate-100">
+          {controlBindings.valve1.label}
+        </kbd>{" "}
+        <kbd className="rounded bg-slate-700 px-2 py-0.5 text-slate-100">
+          {controlBindings.valve2.label}
+        </kbd>{" "}
+        <kbd className="rounded bg-slate-700 px-2 py-0.5 text-slate-100">
+          {controlBindings.valve3.label}
+        </kbd>{" "}
+        para válvulas,{" "}
+        <kbd className="rounded bg-slate-700 px-2 py-0.5 text-slate-100">
+          {controlBindings.slide.label}
+        </kbd>{" "}
+        para slide e{" "}
+        <kbd className="rounded bg-slate-700 px-2 py-0.5 text-slate-100">
+          {controlBindings.submit.label}
+        </kbd>{" "}
+        para nota aberta.
       </div>
 
       {/* Filters */}
