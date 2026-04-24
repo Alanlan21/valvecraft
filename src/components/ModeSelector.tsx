@@ -3,12 +3,8 @@ import type {
   AudioMode,
   ControlAction,
   ControlBindings,
-  GameMode,
-  NoteType,
-  RangeLevel,
   TrumpetType,
 } from "../types";
-import { getNotesForMode } from "../utils/noteUtils";
 import {
   CONTROL_ACTION_LABELS,
   CONTROL_ACTIONS,
@@ -20,32 +16,18 @@ import {
 interface ModeSelectorProps {
   audioMode: AudioMode;
   controlBindings: ControlBindings;
+  trumpetType: TrumpetType;
   onAudioModeChange: (mode: AudioMode) => void;
+  onTrumpetTypeChange: (type: TrumpetType) => void;
   onControlBindingsChange: (
     value: ControlBindings | ((prev: ControlBindings) => ControlBindings),
   ) => void;
   onControlBindingsReset: () => void;
-  onStart: (mode: GameMode) => void;
-  onRhythmMode: (trumpetType: TrumpetType) => void;
+  onQuizMode: () => void;
+  onRhythmMode: () => void;
 }
 
-type SettingsPanel = "range" | "notes" | "trumpet" | "controls";
-
-const RANGE_OPTIONS: { value: RangeLevel; label: string; desc: string }[] = [
-  { value: "beginner", label: "Iniciante", desc: "C4 - G4 (8 notas)" },
-  { value: "intermediate", label: "Intermediário", desc: "G3 - C5 (18 notas)" },
-  { value: "advanced", label: "Avançado", desc: "G3 - G5 (25 notas)" },
-];
-
-const TYPE_OPTIONS: { value: NoteType; label: string; desc: string }[] = [
-  { value: "natural", label: "Naturais", desc: "Apenas notas sem acidente" },
-  {
-    value: "accidental",
-    label: "Acidentes",
-    desc: "Naturais + bemóis + sustenidos",
-  },
-  { value: "chromatic", label: "Cromático", desc: "Todas as notas" },
-];
+type SettingsPanel = "trumpet" | "controls";
 
 const TRUMPET_OPTIONS: {
   value: TrumpetType;
@@ -70,25 +52,20 @@ const TRUMPET_OPTIONS: {
 export function ModeSelector({
   audioMode,
   controlBindings,
+  trumpetType,
   onAudioModeChange,
+  onTrumpetTypeChange,
   onControlBindingsChange,
   onControlBindingsReset,
-  onStart,
+  onQuizMode,
   onRhythmMode,
 }: ModeSelectorProps) {
-  const [rangeLevel, setRangeLevel] = useState<RangeLevel>("beginner");
-  const [noteType, setNoteType] = useState<NoteType>("natural");
-  const [trumpetType, setTrumpetType] = useState<TrumpetType>("Bb");
   const [activePanel, setActivePanel] = useState<SettingsPanel | null>(null);
   const [listeningAction, setListeningAction] = useState<ControlAction | null>(
     null,
   );
   const [controlMessage, setControlMessage] = useState<string | null>(null);
 
-  const mode: GameMode = { rangeLevel, noteType, trumpetType };
-  const previewNotes = getNotesForMode(mode);
-  const selectedRange = RANGE_OPTIONS.find((opt) => opt.value === rangeLevel)!;
-  const selectedType = TYPE_OPTIONS.find((opt) => opt.value === noteType)!;
   const selectedTrumpet = TRUMPET_OPTIONS.find(
     (opt) => opt.value === trumpetType,
   )!;
@@ -97,15 +74,9 @@ export function ModeSelector({
     label: string;
     value: string;
   }[] = [
-    { panel: "range", label: "Dificuldade", value: selectedRange.label },
-    {
-      panel: "notes",
-      label: "Tipo de notas",
-      value: `${selectedType.label} (${previewNotes.length})`,
-    },
     {
       panel: "trumpet",
-      label: "Instrumento",
+      label: "Afinação",
       value: selectedTrumpet.shortLabel,
     },
     {
@@ -206,22 +177,14 @@ export function ModeSelector({
       <div className="flex w-full flex-col items-center gap-3">
         <div className="flex w-full gap-3">
           <button
-            onClick={() => onStart(mode)}
-            disabled={previewNotes.length === 0}
-            className={`
-              flex-1 rounded-xl py-4 text-lg font-black uppercase tracking-wider transition-all
-              ${
-                previewNotes.length > 0
-                  ? "bg-[#d4a853] text-[#1a1a2e] shadow-lg shadow-[#d4a853]/20 hover:bg-[#e0b86a] hover:shadow-[#d4a853]/40 active:scale-[0.98]"
-                  : "cursor-not-allowed bg-[#2a2a4a] text-[#fffff0]/30"
-              }
-            `}
+            onClick={onQuizMode}
+            className="flex-1 rounded-xl bg-[#d4a853] py-4 text-lg font-black uppercase tracking-wider text-[#1a1a2e] shadow-lg shadow-[#d4a853]/20 transition-all hover:bg-[#e0b86a] hover:shadow-[#d4a853]/40 active:scale-[0.98]"
           >
             Modo Quiz
           </button>
 
           <button
-            onClick={() => onRhythmMode(trumpetType)}
+            onClick={onRhythmMode}
             className="flex-1 rounded-xl py-4 text-lg font-black uppercase tracking-wider transition-all bg-emerald-600 text-white shadow-lg shadow-emerald-600/20 hover:bg-emerald-500 hover:shadow-emerald-500/40 active:scale-[0.98]"
           >
             Modo Ritmo
@@ -229,8 +192,8 @@ export function ModeSelector({
         </div>
 
         <p className="text-center text-xs text-[#fffff0]/35">
-          {selectedRange.label} / {selectedType.label} /{" "}
-          {selectedTrumpet.shortLabel} / {previewNotes.length} notas
+          Escolha um modo para começar. Afinação ativa:{" "}
+          {selectedTrumpet.shortLabel}.
         </p>
       </div>
 
@@ -266,86 +229,16 @@ export function ModeSelector({
 
       {activePanel && (
         <div className="w-full rounded-lg border border-[#cd7f32]/20 bg-[#16213e] p-4">
-          {activePanel === "range" && (
-            <div>
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#cd7f32]">
-                Dificuldade
-              </h2>
-              <div className="grid grid-cols-3 gap-2">
-                {RANGE_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => setRangeLevel(opt.value)}
-                    className={`
-                      rounded-lg border-2 px-3 py-3 text-left transition-all
-                      ${
-                        rangeLevel === opt.value
-                          ? "border-[#d4a853] bg-[#d4a853]/10 text-[#d4a853]"
-                          : "border-[#cd7f32]/20 bg-[#1a1a2e] text-[#fffff0]/60 hover:border-[#cd7f32]/40"
-                      }
-                    `}
-                  >
-                    <div className="text-sm font-bold">{opt.label}</div>
-                    <div className="mt-1 text-xs opacity-60">{opt.desc}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {activePanel === "notes" && (
-            <div>
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#cd7f32]">
-                Tipo de Notas
-              </h2>
-              <div className="grid grid-cols-3 gap-2">
-                {TYPE_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => setNoteType(opt.value)}
-                    className={`
-                      rounded-lg border-2 px-3 py-3 text-left transition-all
-                      ${
-                        noteType === opt.value
-                          ? "border-[#d4a853] bg-[#d4a853]/10 text-[#d4a853]"
-                          : "border-[#cd7f32]/20 bg-[#1a1a2e] text-[#fffff0]/60 hover:border-[#cd7f32]/40"
-                      }
-                    `}
-                  >
-                    <div className="text-sm font-bold">{opt.label}</div>
-                    <div className="mt-1 text-xs opacity-60">{opt.desc}</div>
-                  </button>
-                ))}
-              </div>
-
-              <div className="mt-4">
-                <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#cd7f32]/60">
-                  Notas incluídas ({previewNotes.length})
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {previewNotes.map((n) => (
-                    <span
-                      key={n.id}
-                      className="rounded bg-[#1a1a2e] px-2 py-1 text-xs font-mono text-[#fffff0]/70"
-                    >
-                      {n.id}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
           {activePanel === "trumpet" && (
             <div>
               <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#cd7f32]">
-                Instrumento
+                Afinação do Trompete
               </h2>
               <div className="grid grid-cols-2 gap-2">
                 {TRUMPET_OPTIONS.map((opt) => (
                   <button
                     key={opt.value}
-                    onClick={() => setTrumpetType(opt.value)}
+                    onClick={() => onTrumpetTypeChange(opt.value)}
                     className={`
                       rounded-lg border-2 px-3 py-3 text-left transition-all
                       ${

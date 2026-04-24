@@ -135,8 +135,6 @@ export function getNotesForMode(mode: GameMode): Note[] {
       return rangeNotes.filter(
         (n) => isNatural(n.name) || isSharp(n.name) || isFlat(n.name),
       );
-    case "chromatic":
-      return rangeNotes;
   }
 }
 

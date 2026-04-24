@@ -1,0 +1,186 @@
+import { useMemo, useState } from "react";
+import type { GameMode, NoteType, RangeLevel, TrumpetType } from "../types";
+import { getNotesForMode } from "../utils/noteUtils";
+
+interface QuizSetupScreenProps {
+  trumpetType: TrumpetType;
+  highScore: number;
+  bestStreak: number;
+  onBack: () => void;
+  onStart: (mode: GameMode) => void;
+}
+
+const RANGE_OPTIONS: { value: RangeLevel; label: string; desc: string }[] = [
+  { value: "beginner", label: "Iniciante", desc: "C4 - G4 (8 notas)" },
+  {
+    value: "intermediate",
+    label: "Intermediário",
+    desc: "G3 - C5 (18 notas)",
+  },
+  { value: "advanced", label: "Avançado", desc: "G3 - G5 (25 notas)" },
+];
+
+const TYPE_OPTIONS: { value: NoteType; label: string; desc: string }[] = [
+  { value: "natural", label: "Naturais", desc: "Apenas notas sem acidente" },
+  {
+    value: "accidental",
+    label: "Acidentes",
+    desc: "Todas as notas com acidentes da faixa",
+  },
+];
+
+export function QuizSetupScreen({
+  trumpetType,
+  highScore,
+  bestStreak,
+  onBack,
+  onStart,
+}: QuizSetupScreenProps) {
+  const [rangeLevel, setRangeLevel] = useState<RangeLevel>("beginner");
+  const [noteType, setNoteType] = useState<NoteType>("natural");
+
+  const mode = useMemo<GameMode>(
+    () => ({ rangeLevel, noteType, trumpetType }),
+    [noteType, rangeLevel, trumpetType],
+  );
+  const previewNotes = getNotesForMode(mode);
+
+  return (
+    <div className="flex w-full max-w-4xl flex-col gap-6">
+      <div className="flex items-center justify-between gap-4">
+        <button
+          type="button"
+          onClick={onBack}
+          className="rounded-lg border border-[#cd7f32]/30 px-4 py-2 text-sm text-[#cd7f32]/70 transition-colors hover:border-[#cd7f32]/60 hover:text-[#cd7f32]"
+        >
+          ← Voltar
+        </button>
+
+        <div className="text-center">
+          <h1 className="text-3xl font-black text-[#d4a853]">
+            Configurar Quiz
+          </h1>
+          <p className="mt-1 text-sm text-[#fffff0]/45">
+            Escolha a faixa e o conjunto de notas antes de começar.
+          </p>
+        </div>
+
+        <div className="rounded-lg border border-[#cd7f32]/20 bg-[#16213e] px-3 py-2 text-right text-sm text-[#fffff0]/60">
+          <div className="text-xs uppercase tracking-wider text-[#cd7f32]/60">
+            Afinação ativa
+          </div>
+          <div className="font-semibold text-[#d4a853]">{trumpetType}</div>
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-xl border border-[#cd7f32]/20 bg-[#16213e] p-4">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#cd7f32]">
+            Dificuldade
+          </h2>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            {RANGE_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setRangeLevel(opt.value)}
+                className={`rounded-lg border-2 px-3 py-3 text-left transition-all ${
+                  rangeLevel === opt.value
+                    ? "border-[#d4a853] bg-[#d4a853]/10 text-[#d4a853]"
+                    : "border-[#cd7f32]/20 bg-[#1a1a2e] text-[#fffff0]/60 hover:border-[#cd7f32]/40"
+                }`}
+              >
+                <div className="text-sm font-bold">{opt.label}</div>
+                <div className="mt-1 text-xs opacity-60">{opt.desc}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-[#cd7f32]/20 bg-[#16213e] p-4">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#cd7f32]">
+            Tipo de Notas
+          </h2>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {TYPE_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setNoteType(opt.value)}
+                className={`rounded-lg border-2 px-3 py-3 text-left transition-all ${
+                  noteType === opt.value
+                    ? "border-[#d4a853] bg-[#d4a853]/10 text-[#d4a853]"
+                    : "border-[#cd7f32]/20 bg-[#1a1a2e] text-[#fffff0]/60 hover:border-[#cd7f32]/40"
+                }`}
+              >
+                <div className="text-sm font-bold">{opt.label}</div>
+                <div className="mt-1 text-xs opacity-60">{opt.desc}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-[1.4fr_0.8fr]">
+        <div className="rounded-xl border border-[#cd7f32]/20 bg-[#16213e] p-4">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-[#cd7f32]">
+              Notas Incluídas
+            </h2>
+            <span className="text-xs text-[#fffff0]/45">
+              {previewNotes.length} notas
+            </span>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {previewNotes.map((note) => (
+              <span
+                key={note.id}
+                className="rounded bg-[#1a1a2e] px-2 py-1 text-xs font-mono text-[#fffff0]/70"
+              >
+                {note.id}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-[#cd7f32]/20 bg-[#16213e] p-4">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#cd7f32]">
+            Seu Melhor Quiz
+          </h2>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-lg bg-[#1a1a2e]/70 p-3 text-center">
+              <div className="text-xs uppercase tracking-wider text-[#cd7f32]/60">
+                Recorde
+              </div>
+              <div className="mt-1 text-xl font-black text-[#d4a853]">
+                {highScore.toLocaleString()}
+              </div>
+            </div>
+            <div className="rounded-lg bg-[#1a1a2e]/70 p-3 text-center">
+              <div className="text-xs uppercase tracking-wider text-[#cd7f32]/60">
+                Melhor Streak
+              </div>
+              <div className="mt-1 text-xl font-black text-[#fffff0]/75">
+                {bestStreak}
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => onStart(mode)}
+            disabled={previewNotes.length === 0}
+            className={`mt-4 w-full rounded-xl py-3 text-lg font-black uppercase tracking-wider transition-all ${
+              previewNotes.length > 0
+                ? "bg-[#d4a853] text-[#1a1a2e] shadow-lg shadow-[#d4a853]/20 hover:bg-[#e0b86a] hover:shadow-[#d4a853]/40 active:scale-[0.98]"
+                : "cursor-not-allowed bg-[#2a2a4a] text-[#fffff0]/30"
+            }`}
+          >
+            Começar Quiz
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

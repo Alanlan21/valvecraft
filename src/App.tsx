@@ -11,6 +11,7 @@ import type {
 import { useControlBindings } from "./hooks/useControlBindings";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 import { ModeSelector } from "./components/ModeSelector";
+import { QuizSetupScreen } from "./components/QuizSetupScreen";
 import { GameScreen as GameView } from "./components/GameScreen";
 import { SheetSelector } from "./components/SheetSelector";
 import { RhythmModeScreen } from "./components/RhythmModeScreen";
@@ -19,7 +20,10 @@ function App() {
   const [screen, setScreen] = useState<GameScreen>("menu");
   const [mode, setMode] = useState<GameMode | null>(null);
   const [selectedSheet, setSelectedSheet] = useState<Sheet | null>(null);
-  const [trumpetType, setTrumpetType] = useState<TrumpetType>("Bb");
+  const [trumpetType, setTrumpetType] = useLocalStorage<TrumpetType>(
+    "valvecraft:trumpetType",
+    "Bb",
+  );
   const [highScore, setHighScore] = useLocalStorage("valvecraft:highScore", 0);
   const [bestStreak, setBestStreak] = useLocalStorage(
     "valvecraft:bestStreak",
@@ -69,8 +73,11 @@ function App() {
     setScreen("game");
   }
 
-  function handleRhythmMode(selectedTrumpetType: TrumpetType) {
-    setTrumpetType(selectedTrumpetType);
+  function handleQuizMode() {
+    setScreen("quiz-setup");
+  }
+
+  function handleRhythmMode() {
     setScreen("rhythm-select");
   }
 
@@ -132,30 +139,26 @@ function App() {
           <ModeSelector
             audioMode={audioMode}
             controlBindings={controlBindings}
+            trumpetType={trumpetType}
             onAudioModeChange={setAudioMode}
+            onTrumpetTypeChange={setTrumpetType}
             onControlBindingsChange={setControlBindings}
             onControlBindingsReset={resetControlBindings}
-            onStart={handleStart}
+            onQuizMode={handleQuizMode}
             onRhythmMode={handleRhythmMode}
           />
+        </div>
+      )}
 
-          {/* Persistent stats */}
-          {(highScore > 0 || bestStreak > 0) && (
-            <div className="mt-6 flex gap-6 text-sm text-[#fffff0]/30">
-              <span>
-                Recorde:{" "}
-                <span className="font-bold text-[#d4a853]/60">
-                  {highScore.toLocaleString()}
-                </span>
-              </span>
-              <span>
-                Melhor streak:{" "}
-                <span className="font-bold text-[#d4a853]/60">
-                  {bestStreak}
-                </span>
-              </span>
-            </div>
-          )}
+      {screen === "quiz-setup" && (
+        <div className="flex min-h-screen flex-col items-center justify-center px-4 py-8">
+          <QuizSetupScreen
+            trumpetType={trumpetType}
+            highScore={highScore}
+            bestStreak={bestStreak}
+            onBack={handleExit}
+            onStart={handleStart}
+          />
         </div>
       )}
 

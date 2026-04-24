@@ -82,26 +82,34 @@ export function SheetSelector({
         notas — toque a digitação correta no momento certo!
       </div>
 
-      <div className="mx-auto w-full max-w-3xl rounded-xl border border-slate-700 bg-slate-800/40 px-4 py-3 text-center text-sm text-slate-300">
-        <span className="text-slate-400">Bindings atuais:</span>{" "}
-        <kbd className="rounded bg-slate-700 px-2 py-0.5 text-slate-100">
-          {controlBindings.valve1.label}
-        </kbd>{" "}
-        <kbd className="rounded bg-slate-700 px-2 py-0.5 text-slate-100">
-          {controlBindings.valve2.label}
-        </kbd>{" "}
-        <kbd className="rounded bg-slate-700 px-2 py-0.5 text-slate-100">
-          {controlBindings.valve3.label}
-        </kbd>{" "}
-        para válvulas,{" "}
-        <kbd className="rounded bg-slate-700 px-2 py-0.5 text-slate-100">
-          {controlBindings.slide.label}
-        </kbd>{" "}
-        para slide e{" "}
-        <kbd className="rounded bg-slate-700 px-2 py-0.5 text-slate-100">
-          {controlBindings.submit.label}
-        </kbd>{" "}
-        para nota aberta.
+      <div className="mx-auto flex w-full max-w-3xl flex-wrap items-center justify-center gap-2 rounded-xl border border-slate-700/80 bg-slate-800/30 px-3 py-2 text-xs text-slate-300">
+        <span className="mr-1 uppercase tracking-wide text-slate-500">
+          Controles
+        </span>
+        <span className="rounded-full border border-slate-700 bg-slate-800 px-2 py-1">
+          Válvulas:
+          <kbd className="ml-1 rounded bg-slate-700 px-1.5 py-0.5 text-slate-100">
+            {controlBindings.valve1.label}
+          </kbd>
+          <kbd className="ml-1 rounded bg-slate-700 px-1.5 py-0.5 text-slate-100">
+            {controlBindings.valve2.label}
+          </kbd>
+          <kbd className="ml-1 rounded bg-slate-700 px-1.5 py-0.5 text-slate-100">
+            {controlBindings.valve3.label}
+          </kbd>
+        </span>
+        <span className="rounded-full border border-slate-700 bg-slate-800 px-2 py-1">
+          Slide:
+          <kbd className="ml-1 rounded bg-slate-700 px-1.5 py-0.5 text-slate-100">
+            {controlBindings.slide.label}
+          </kbd>
+        </span>
+        <span className="rounded-full border border-slate-700 bg-slate-800 px-2 py-1">
+          Aberta:
+          <kbd className="ml-1 rounded bg-slate-700 px-1.5 py-0.5 text-slate-100">
+            {controlBindings.submit.label}
+          </kbd>
+        </span>
       </div>
 
       {/* Filters */}
