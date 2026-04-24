@@ -55,6 +55,7 @@ const INITIAL_STATE: GameEngineState = {
  */
 export function useGameEngine() {
   const [state, setState] = useState<GameEngineState>(INITIAL_STATE);
+  const modeRef = useRef<GameMode | null>(null);
   const noteAppearedAt = useRef<number>(0);
   const timerTickAt = useRef<number>(0);
   const runStartAt = useRef<number>(0);
@@ -89,7 +90,7 @@ export function useGameEngine() {
   }, [clearNoteTimer, state.gameOver]);
 
   useEffect(() => {
-    if (!state.gameActive) return;
+    if (!state.gameActive || modeRef.current?.quizMode === "training") return;
 
     timerTickAt.current = performance.now();
 
@@ -125,6 +126,7 @@ export function useGameEngine() {
 
   const startGame = useCallback(
     (mode: GameMode) => {
+      modeRef.current = mode;
       const pool = getNotesForMode(mode);
       const first = getRandomNote(pool);
       clearNoteTimer();
@@ -171,10 +173,13 @@ export function useGameEngine() {
         const points = calculateScore(timeMs, prev.streak, correct);
         const newBestStreak = Math.max(prev.bestStreak, newStreak);
         const nextNote = getRandomNote(prev.notePool, prev.currentNote.id);
-        const timeLeftMs = correct
-          ? prev.timeLeftMs + timeGainMs
-          : Math.max(0, prev.timeLeftMs - WRONG_ANSWER_TIME_PENALTY_MS);
-        const gameOver = timeLeftMs <= 0;
+        const isTrainingMode = modeRef.current?.quizMode === "training";
+        const timeLeftMs = isTrainingMode
+          ? prev.timeLeftMs
+          : correct
+            ? prev.timeLeftMs + timeGainMs
+            : Math.max(0, prev.timeLeftMs - WRONG_ANSWER_TIME_PENALTY_MS);
+        const gameOver = isTrainingMode ? false : timeLeftMs <= 0;
 
         const result: AnswerResult = {
           correct,

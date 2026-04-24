@@ -2,6 +2,7 @@ import { HeatBar } from "./HeatBar";
 
 interface ScoreBoardProps {
   timeLeftMs: number;
+  trainingMode?: boolean;
   score: number;
   streak: number;
   bestStreak: number;
@@ -19,6 +20,7 @@ function formatTime(timeLeftMs: number) {
 
 export function ScoreBoard({
   timeLeftMs,
+  trainingMode = false,
   score,
   streak,
   bestStreak,
@@ -27,7 +29,7 @@ export function ScoreBoard({
 }: ScoreBoardProps) {
   const accuracy =
     totalAnswers > 0 ? Math.round((correctAnswers / totalAnswers) * 100) : 0;
-  const danger = timeLeftMs <= 10_000;
+  const danger = !trainingMode && timeLeftMs <= 10_000;
 
   return (
     <div className="flex flex-col gap-2 rounded-xl bg-[#16213e] px-4 py-3 shadow-lg shadow-black/20">
@@ -41,14 +43,14 @@ export function ScoreBoard({
           }`}
         >
           <span className="text-xs font-semibold uppercase tracking-wider text-[#cd7f32]/60">
-            Tempo
+            {trainingMode ? "Modo" : "Tempo"}
           </span>
           <span
             className={`text-3xl font-black tabular-nums ${
               danger ? "text-red-400" : "text-[#d4a853]"
             }`}
           >
-            {formatTime(timeLeftMs)}
+            {trainingMode ? "Livre" : formatTime(timeLeftMs)}
           </span>
         </div>
 

@@ -16,6 +16,8 @@ const V123: [boolean, boolean, boolean] = [true, true, true];
  */
 export const fingeringMap: Record<string, Fingering> = {
   // --- Low register (G3 – B3) ---
+  "F#3": { valves: V123, slide: true },
+  Gb3: { valves: V123, slide: true },
   G3: { valves: V13, slide: true },
   "G#3": { valves: V23, slide: false },
   Ab3: { valves: V23, slide: false },
@@ -53,11 +55,20 @@ export const fingeringMap: Record<string, Fingering> = {
   "F#5": { valves: V2, slide: false },
   Gb5: { valves: V2, slide: false },
   G5: { valves: O, slide: false },
+  "G#5": { valves: V23, slide: false },
+  Ab5: { valves: V23, slide: false },
+  A5: { valves: V12, slide: false },
+  "A#5": { valves: V1, slide: false },
+  Bb5: { valves: V1, slide: false },
+  B5: { valves: V2, slide: false },
+  C6: { valves: O, slide: false },
 };
 
 /** Helper to check if two notes are enharmonic equivalents */
 function isEnharmonicOf(id: string): string | null {
   const pairs: Record<string, string> = {
+    "F#3": "Gb3",
+    Gb3: "F#3",
     "G#3": "Ab3",
     Ab3: "G#3",
     "C#4": "Db4",
@@ -74,6 +85,10 @@ function isEnharmonicOf(id: string): string | null {
     Eb5: "D#5",
     "F#5": "Gb5",
     Gb5: "F#5",
+    "G#5": "Ab5",
+    Ab5: "G#5",
+    "A#5": "Bb5",
+    Bb5: "A#5",
   };
   return pairs[id] ?? null;
 }
@@ -85,6 +100,7 @@ function isEnharmonicOf(id: string): string | null {
  */
 export const allNotes: Note[] = [
   // G3 – B3
+  { id: "F#3", name: "F#", octave: 3, vexflowKey: "f#/3" },
   { id: "G3", name: "G", octave: 3, vexflowKey: "g/3" },
   { id: "Ab3", name: "Ab", octave: 3, vexflowKey: "ab/3" },
   { id: "A3", name: "A", octave: 3, vexflowKey: "a/3" },
@@ -114,6 +130,11 @@ export const allNotes: Note[] = [
   { id: "F5", name: "F", octave: 5, vexflowKey: "f/5" },
   { id: "F#5", name: "F#", octave: 5, vexflowKey: "f#/5" },
   { id: "G5", name: "G", octave: 5, vexflowKey: "g/5" },
+  { id: "Ab5", name: "Ab", octave: 5, vexflowKey: "ab/5" },
+  { id: "A5", name: "A", octave: 5, vexflowKey: "a/5" },
+  { id: "Bb5", name: "Bb", octave: 5, vexflowKey: "bb/5" },
+  { id: "B5", name: "B", octave: 5, vexflowKey: "b/5" },
+  { id: "C6", name: "C", octave: 6, vexflowKey: "c/6" },
 ];
 
 export { isEnharmonicOf };

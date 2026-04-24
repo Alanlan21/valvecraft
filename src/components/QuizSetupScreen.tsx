@@ -1,5 +1,11 @@
 import { useMemo, useState } from "react";
-import type { GameMode, NoteType, RangeLevel, TrumpetType } from "../types";
+import type {
+  GameMode,
+  NoteType,
+  QuizMode,
+  RangeLevel,
+  TrumpetType,
+} from "../types";
 import { getNotesForMode } from "../utils/noteUtils";
 
 interface QuizSetupScreenProps {
@@ -11,21 +17,55 @@ interface QuizSetupScreenProps {
 }
 
 const RANGE_OPTIONS: { value: RangeLevel; label: string; desc: string }[] = [
-  { value: "beginner", label: "Iniciante", desc: "C4 - G4 (8 notas)" },
+  {
+    value: "beginner",
+    label: "Iniciante",
+    desc: "Faixa curta e confortável.",
+  },
   {
     value: "intermediate",
     label: "Intermediário",
-    desc: "G3 - C5 (18 notas)",
+    desc: "Registro mais comum.",
   },
-  { value: "advanced", label: "Avançado", desc: "G3 - G5 (25 notas)" },
+  {
+    value: "advanced",
+    label: "Avançado",
+    desc: "Faixa prática completa.",
+  },
+  {
+    value: "extreme",
+    label: "Extremo",
+    desc: "De F#3 até C6.",
+  },
 ];
 
 const TYPE_OPTIONS: { value: NoteType; label: string; desc: string }[] = [
-  { value: "natural", label: "Naturais", desc: "Apenas notas sem acidente" },
+  {
+    value: "natural",
+    label: "Naturais",
+    desc: "Sem sustenidos ou bemóis.",
+  },
   {
     value: "accidental",
     label: "Acidentes",
-    desc: "Todas as notas com acidentes da faixa",
+    desc: "Com sustenidos e bemóis.",
+  },
+];
+
+const QUIZ_MODE_OPTIONS: {
+  value: QuizMode;
+  label: string;
+  desc: string;
+}[] = [
+  {
+    value: "challenge",
+    label: "Desafio",
+    desc: "Com tempo e recorde.",
+  },
+  {
+    value: "training",
+    label: "Treino",
+    desc: "Sem tempo, com dedilhado livre.",
   },
 ];
 
@@ -38,10 +78,11 @@ export function QuizSetupScreen({
 }: QuizSetupScreenProps) {
   const [rangeLevel, setRangeLevel] = useState<RangeLevel>("beginner");
   const [noteType, setNoteType] = useState<NoteType>("natural");
+  const [quizMode, setQuizMode] = useState<QuizMode>("challenge");
 
   const mode = useMemo<GameMode>(
-    () => ({ rangeLevel, noteType, trumpetType }),
-    [noteType, rangeLevel, trumpetType],
+    () => ({ rangeLevel, noteType, trumpetType, quizMode }),
+    [noteType, quizMode, rangeLevel, trumpetType],
   );
   const previewNotes = getNotesForMode(mode);
 
@@ -61,7 +102,7 @@ export function QuizSetupScreen({
             Configurar Quiz
           </h1>
           <p className="mt-1 text-sm text-[#fffff0]/45">
-            Escolha a faixa e o conjunto de notas antes de começar.
+            Escolha o modo e a faixa antes de começar.
           </p>
         </div>
 
@@ -74,17 +115,40 @@ export function QuizSetupScreen({
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-xl border border-[#cd7f32]/20 bg-[#16213e] p-4">
+        <div className="order-1 rounded-xl border border-[#cd7f32]/20 bg-[#16213e] p-4">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#cd7f32]">
+            Modo
+          </h2>
+          <div className="grid grid-cols-1 gap-2">
+            {QUIZ_MODE_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setQuizMode(opt.value)}
+                className={`rounded-lg border-2 px-3 py-3 text-left transition-all ${
+                  quizMode === opt.value
+                    ? "border-[#d4a853] bg-[#d4a853]/10 text-[#d4a853]"
+                    : "border-[#cd7f32]/20 bg-[#1a1a2e] text-[#fffff0]/60 hover:border-[#cd7f32]/40"
+                }`}
+              >
+                <div className="text-sm font-bold">{opt.label}</div>
+                <div className="mt-1 text-xs opacity-60">{opt.desc}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="order-3 rounded-xl border border-[#cd7f32]/20 bg-[#16213e] p-4 md:col-span-2">
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#cd7f32]">
             Dificuldade
           </h2>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
             {RANGE_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
                 type="button"
                 onClick={() => setRangeLevel(opt.value)}
-                className={`rounded-lg border-2 px-3 py-3 text-left transition-all ${
+                className={`min-h-24 rounded-lg border-2 px-3 py-3 text-left transition-all xl:min-h-28 ${
                   rangeLevel === opt.value
                     ? "border-[#d4a853] bg-[#d4a853]/10 text-[#d4a853]"
                     : "border-[#cd7f32]/20 bg-[#1a1a2e] text-[#fffff0]/60 hover:border-[#cd7f32]/40"
@@ -97,7 +161,7 @@ export function QuizSetupScreen({
           </div>
         </div>
 
-        <div className="rounded-xl border border-[#cd7f32]/20 bg-[#16213e] p-4">
+        <div className="order-2 rounded-xl border border-[#cd7f32]/20 bg-[#16213e] p-4">
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#cd7f32]">
             Tipo de Notas
           </h2>
@@ -131,6 +195,10 @@ export function QuizSetupScreen({
               {previewNotes.length} notas
             </span>
           </div>
+
+          <p className="mb-3 text-sm text-[#fffff0]/50">
+            {quizMode === "training" ? "Treino" : "Desafio"} com {previewNotes.length} notas.
+          </p>
 
           <div className="flex flex-wrap gap-2">
             {previewNotes.map((note) => (
@@ -177,7 +245,7 @@ export function QuizSetupScreen({
                 : "cursor-not-allowed bg-[#2a2a4a] text-[#fffff0]/30"
             }`}
           >
-            Começar Quiz
+            {quizMode === "training" ? "Começar Treino" : "Começar Quiz"}
           </button>
         </div>
       </div>

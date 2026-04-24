@@ -23,6 +23,7 @@ const RANGE_BOUNDS: Record<
   beginner: { min: "C4", max: "G4" },
   intermediate: { min: "G3", max: "C5" },
   advanced: { min: "G3", max: "G5" },
+  extreme: { min: "F#3", max: "C6" },
 };
 
 /** Check if a note name (without octave) is natural */

@@ -120,7 +120,7 @@ export function GameScreen({
   const [showHint, setShowHint] = useState(false);
   useEffect(() => {
     setShowHint(false);
-  }, [currentNote?.id]);
+  }, [currentNote?.id, mode.quizMode]);
   useEffect(() => {
     if (gameOver) {
       setDisplayNote(null);
@@ -163,6 +163,7 @@ export function GameScreen({
       <div className="flex w-full max-w-3xl items-center justify-between gap-4">
         <ScoreBoard
           timeLeftMs={timeLeftMs}
+          trainingMode={mode.quizMode === "training"}
           score={score}
           streak={streak}
           bestStreak={bestStreak}
@@ -198,7 +199,7 @@ export function GameScreen({
       </div>
 
       {/* "Ver dedilhado" hint — appears after 2+ errors on the same note */}
-      {currentNoteErrors >= 2 && displayNote && (
+      {(mode.quizMode === "training" || currentNoteErrors >= 2) && displayNote && (
         <div className="flex flex-col items-center gap-3">
           <button
             onClick={() => setShowHint((v) => !v)}

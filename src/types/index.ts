@@ -18,11 +18,12 @@ export interface Fingering {
   slide: boolean;
 }
 
-export type RangeLevel = "beginner" | "intermediate" | "advanced";
+export type RangeLevel = "beginner" | "intermediate" | "advanced" | "extreme";
 export type NoteType = "natural" | "accidental";
 export type TrumpetType = "Bb" | "C";
 export type AudioMode = "mono" | "off";
 export type ControlAction = "valve1" | "valve2" | "valve3" | "slide" | "submit";
+export type QuizMode = "challenge" | "training";
 
 export interface KeyBinding {
   code: string;
@@ -35,6 +36,7 @@ export interface GameMode {
   rangeLevel: RangeLevel;
   noteType: NoteType;
   trumpetType: TrumpetType;
+  quizMode: QuizMode;
 }
 
 /** Quality band assigned to a correct answer based on response time. */
