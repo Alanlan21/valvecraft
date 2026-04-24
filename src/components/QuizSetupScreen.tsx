@@ -197,7 +197,8 @@ export function QuizSetupScreen({
           </div>
 
           <p className="mb-3 text-sm text-[#fffff0]/50">
-            {quizMode === "training" ? "Treino" : "Desafio"} com {previewNotes.length} notas.
+            {quizMode === "training" ? "Treino" : "Desafio"} com{" "}
+            {previewNotes.length} notas.
           </p>
 
           <div className="flex flex-wrap gap-2">

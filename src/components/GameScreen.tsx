@@ -199,27 +199,28 @@ export function GameScreen({
       </div>
 
       {/* "Ver dedilhado" hint — appears after 2+ errors on the same note */}
-      {(mode.quizMode === "training" || currentNoteErrors >= 2) && displayNote && (
-        <div className="flex flex-col items-center gap-3">
-          <button
-            onClick={() => setShowHint((v) => !v)}
-            className="rounded-lg border border-[#cd7f32]/40 px-4 py-1.5 text-sm text-[#d4a853]/70 transition-colors hover:border-[#d4a853]/60 hover:text-[#d4a853]"
-          >
-            {showHint ? "Ocultar dedilhado" : "💡 Ver dedilhado"}
-          </button>
-          {showHint && fingeringMap[displayNote.id] && (
-            <div className="flex flex-col items-center gap-2 rounded-xl border border-[#cd7f32]/20 bg-[#16213e]/80 p-4">
-              <span className="text-xs font-semibold text-[#fffff0]/50">
-                Digitação correta para {displayNote.id}
-              </span>
-              <ValveIndicator
-                controlBindings={controlBindings}
-                currentInput={fingeringMap[displayNote.id]}
-              />
-            </div>
-          )}
-        </div>
-      )}
+      {(mode.quizMode === "training" || currentNoteErrors >= 2) &&
+        displayNote && (
+          <div className="flex flex-col items-center gap-3">
+            <button
+              onClick={() => setShowHint((v) => !v)}
+              className="rounded-lg border border-[#cd7f32]/40 px-4 py-1.5 text-sm text-[#d4a853]/70 transition-colors hover:border-[#d4a853]/60 hover:text-[#d4a853]"
+            >
+              {showHint ? "Ocultar dedilhado" : "💡 Ver dedilhado"}
+            </button>
+            {showHint && fingeringMap[displayNote.id] && (
+              <div className="flex flex-col items-center gap-2 rounded-xl border border-[#cd7f32]/20 bg-[#16213e]/80 p-4">
+                <span className="text-xs font-semibold text-[#fffff0]/50">
+                  Digitação correta para {displayNote.id}
+                </span>
+                <ValveIndicator
+                  controlBindings={controlBindings}
+                  currentInput={fingeringMap[displayNote.id]}
+                />
+              </div>
+            )}
+          </div>
+        )}
 
       {/* Submit hint */}
       <div className="mt-2 text-center text-sm text-[#fffff0]/20">
