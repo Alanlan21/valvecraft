@@ -54,17 +54,21 @@ export function ScoreBoard({
           </span>
         </div>
 
-        {/* Score */}
-        <div className="flex flex-col items-center">
-          <span className="text-xs font-semibold uppercase tracking-wider text-[#cd7f32]/60">
-            Score
-          </span>
-          <span className="text-2xl font-black tabular-nums text-[#d4a853]">
-            {score.toLocaleString()}
-          </span>
-        </div>
+        {/* Score — hidden in training mode */}
+        {!trainingMode && (
+          <>
+            <div className="flex flex-col items-center">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#cd7f32]/60">
+                Score
+              </span>
+              <span className="text-2xl font-black tabular-nums text-[#d4a853]">
+                {score.toLocaleString()}
+              </span>
+            </div>
 
-        <div className="h-10 w-px bg-[#cd7f32]/20" />
+            <div className="h-10 w-px bg-[#cd7f32]/20" />
+          </>
+        )}
 
         {/* Streak */}
         <div className="flex flex-col items-center">

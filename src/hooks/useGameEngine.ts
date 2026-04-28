@@ -170,10 +170,10 @@ export function useGameEngine() {
           : 0;
 
         const newStreak = correct ? prev.streak + 1 : 0;
-        const points = calculateScore(timeMs, prev.streak, correct);
+        const isTrainingMode = modeRef.current?.quizMode === "training";
+        const points = isTrainingMode ? 0 : calculateScore(timeMs, prev.streak, correct);
         const newBestStreak = Math.max(prev.bestStreak, newStreak);
         const nextNote = getRandomNote(prev.notePool, prev.currentNote.id);
-        const isTrainingMode = modeRef.current?.quizMode === "training";
         const timeLeftMs = isTrainingMode
           ? prev.timeLeftMs
           : correct
