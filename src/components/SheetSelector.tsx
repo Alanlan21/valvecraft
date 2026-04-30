@@ -131,7 +131,7 @@ export function SheetSelector({
       {/* Description */}
       <div className="text-center text-slate-400 max-w-lg mx-auto">
         Escolha um exercício ou música para praticar. O playhead passará pelas
-        notas — toque a digitação correta no momento certo!
+        notas. Toque a digitação correta no momento certo!
       </div>
 
       <div className="mx-auto flex w-full max-w-3xl flex-wrap items-center justify-center gap-2 rounded-xl border border-slate-700/80 bg-slate-800/30 px-3 py-2 text-xs text-slate-300">
