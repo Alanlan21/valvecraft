@@ -27,15 +27,16 @@ Suporta **Trompete em Si♭** (padrão) e **Trompete em Dó**.
 
 Você vê uma nota na pauta e precisa identificar e tocar o dedilhado correto nas válvulas.
 
-| Sub-modo | Descrição |
-|---|---|
+| Sub-modo    | Descrição                                                                                             |
+| ----------- | ----------------------------------------------------------------------------------------------------- |
 | **Desafio** | Cronômetro de 60s. Acertos estendem o tempo; erros penalizam. Sistema de streaks com multiplicadores. |
-| **Treino** | Sem tempo, com dicas visuais de dedilhado. Ideal para iniciantes. |
+| **Treino**  | Sem tempo, com dicas visuais de dedilhado. Ideal para iniciantes.                                     |
 
 ![Quiz Setup](public/screenshots/02-quiz-setup.png)
 
 ![Quiz Game]()
 <img width="492" height="412" alt="20260430-1854-17 4583405" src="https://github.com/user-attachments/assets/d4968fe0-7776-4555-af0b-2a44620dba4f" />
+
 #### Configuração do Quiz
 
 Antes de começar, você escolhe:
@@ -54,12 +55,12 @@ Antes de começar, você escolhe:
 
 Acertos consecutivos sobem de nível e aumentam o multiplicador de pontuação:
 
-| Tier | Streak | Multiplicador |
-|---|---|---|
-| 🔵 Ritmo | 0+ | 1.0× |
-| 🟡 Combo | 5+ | 1.15× |
-| 🟠 Foco | 10+ | 1.3× |
-| 🔴 Blitz | 15+ | 1.5× |
+| Tier     | Streak | Multiplicador |
+| -------- | ------ | ------------- |
+| 🔵 Ritmo | 0+     | 1.0×          |
+| 🟡 Combo | 5+     | 1.15×         |
+| 🟠 Foco  | 10+    | 1.3×          |
+| 🔴 Blitz | 15+    | 1.5×          |
 
 ---
 
@@ -71,16 +72,16 @@ Toque músicas reais em partitura. Um playhead percorre as notas no tempo certo 
 
 ![Rhythm Game](public/screenshots/05-rhythm-game.png)
 
-
 **Repertório disponível:**
 
-| Categoria | Títulos |
-|---|---|
-| Escalas | Dó Maior, Sol Maior, Fá Maior |
-| Exercícios | Exercício de Ritmo 1 |
-| Melodias | Ode à Alegria, Hot Cross Buns, Twinkle Twinkle, When the Saints, Parabéns pra Você, Amazing Grace, e mais |
+| Categoria  | Títulos                                                                                                   |
+| ---------- | --------------------------------------------------------------------------------------------------------- |
+| Escalas    | Dó Maior, Sol Maior, Fá Maior                                                                             |
+| Exercícios | Exercício de Ritmo 1                                                                                      |
+| Melodias   | Ode à Alegria, Hot Cross Buns, Twinkle Twinkle, When the Saints, Parabéns pra Você, Amazing Grace, e mais |
 
 Feedback por nota:
+
 - 🟢 **Perfeito** — dedilhado correto no tempo
 - 🟠 **Dedilhado errado** — tempo certo, nota errada
 - 🔴 **Miss** — janela de tempo perdida
@@ -89,13 +90,13 @@ Feedback por nota:
 
 ## Controles
 
-| Ação | Teclado (padrão) |
-|---|---|
-| Válvula 1 | `Q` |
-| Válvula 2 | `W` |
-| Válvula 3 | `E` |
-| 3º slide (correção de afinação) | `Shift` |
-| Confirmar / Nota aberta | `Espaço` |
+| Ação                            | Teclado (padrão) |
+| ------------------------------- | ---------------- |
+| Válvula 1                       | `Q`              |
+| Válvula 2                       | `W`              |
+| Válvula 3                       | `E`              |
+| 3º slide (correção de afinação) | `Shift`          |
+| Confirmar / Nota aberta         | `Espaço`         |
 
 > Os controles podem ser alterados no menu principal.
 
@@ -134,14 +135,14 @@ npm run build
 
 ## Stack tecnológica
 
-| Tecnologia | Uso |
-|---|---|
-| [React 19](https://react.dev/) | Interface e componentes |
-| [TypeScript](https://www.typescriptlang.org/) | Tipagem estática |
-| [Vite 6](https://vitejs.dev/) | Build e dev server |
-| [Tailwind CSS 4](https://tailwindcss.com/) | Estilização |
-| [VexFlow](https://www.vexflow.com/) | Renderização de partituras |
-| [Tone.js](https://tonejs.github.io/) | Síntese e amostras de áudio |
+| Tecnologia                                    | Uso                         |
+| --------------------------------------------- | --------------------------- |
+| [React 19](https://react.dev/)                | Interface e componentes     |
+| [TypeScript](https://www.typescriptlang.org/) | Tipagem estática            |
+| [Vite 6](https://vitejs.dev/)                 | Build e dev server          |
+| [Tailwind CSS 4](https://tailwindcss.com/)    | Estilização                 |
+| [VexFlow](https://www.vexflow.com/)           | Renderização de partituras  |
+| [Tone.js](https://tonejs.github.io/)          | Síntese e amostras de áudio |
 
 ---
 
