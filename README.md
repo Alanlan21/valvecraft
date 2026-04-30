@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎺 Trumpove
+# 🎺 Valvecraft
 
 **Treine dedilhado, leitura e tempo no trompete direto no seu navegador.**
 
@@ -15,7 +15,7 @@
 
 ## Sobre o projeto
 
-Trumpove é um jogo educativo para trompetistas que querem melhorar **dedilhado**, **leitura de partitura** e **senso de ritmo** de forma interativa. Com amostras de áudio reais de trompete e feedback visual em tempo real, o jogo transforma o estudo técnico em uma experiência dinâmica.
+Valvecraft é um jogo educativo para trompetistas que querem melhorar **dedilhado**, **leitura de partitura** e **senso de ritmo** de forma interativa. Com amostras de áudio reais de trompete e feedback visual em tempo real, o jogo transforma o estudo técnico em uma experiência dinâmica.
 
 Suporta **Trompete em Si♭** (padrão) e **Trompete em Dó**.
 
