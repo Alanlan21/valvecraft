@@ -2,7 +2,7 @@
 
 # 🎺 Trumpove
 
-**Treine dedilhado, leitura e tempo no trompete — direto no navegador.**
+**Treine dedilhado, leitura e tempo no trompete direto no seu navegador.**
 
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -34,8 +34,8 @@ Você vê uma nota na pauta e precisa identificar e tocar o dedilhado correto na
 
 ![Quiz Setup](public/screenshots/02-quiz-setup.png)
 
-![Quiz Game](public/screenshots/03-quiz-game.png)
-
+![Quiz Game]()
+<img width="492" height="412" alt="20260430-1854-17 4583405" src="https://github.com/user-attachments/assets/d4968fe0-7776-4555-af0b-2a44620dba4f" />
 #### Configuração do Quiz
 
 Antes de começar, você escolhe:
@@ -70,6 +70,7 @@ Toque músicas reais em partitura. Um playhead percorre as notas no tempo certo 
 ![Rhythm Selector](public/screenshots/04-rhythm-selector.png)
 
 ![Rhythm Game](public/screenshots/05-rhythm-game.png)
+
 
 **Repertório disponível:**
 
