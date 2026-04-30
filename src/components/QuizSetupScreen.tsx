@@ -7,6 +7,7 @@ import type {
   TrumpetType,
 } from "../types";
 import { getNotesForMode } from "../utils/noteUtils";
+import { HelpModal, HelpSection, HelpItem } from "./HelpModal";
 
 interface QuizSetupScreenProps {
   trumpetType: TrumpetType;
@@ -79,6 +80,7 @@ export function QuizSetupScreen({
   const [rangeLevel, setRangeLevel] = useState<RangeLevel>("beginner");
   const [noteType, setNoteType] = useState<NoteType>("natural");
   const [quizMode, setQuizMode] = useState<QuizMode>("challenge");
+  const [showHelp, setShowHelp] = useState(false);
 
   const mode = useMemo<GameMode>(
     () => ({ rangeLevel, noteType, trumpetType, quizMode }),
@@ -88,6 +90,51 @@ export function QuizSetupScreen({
 
   return (
     <div className="flex w-full max-w-4xl flex-col gap-6">
+      {showHelp && (
+        <HelpModal title="Como jogar — Modo Quiz" onClose={() => setShowHelp(false)}>
+          <HelpSection title="Objetivo">
+            <HelpItem>
+              Uma nota aparece na pauta. Pressione as válvulas corretas do
+              trompete para tocar aquela nota.
+            </HelpItem>
+            <HelpItem>
+              Use as teclas configuradas para pressionar as válvulas 1, 2 e 3
+              e o slide. Para nota aberta (sem válvulas), pressione a tecla de
+              confirmar.
+            </HelpItem>
+          </HelpSection>
+          <HelpSection title="Modo Desafio">
+            <HelpItem>
+              Você começa com um tempo limitado. Cada acerto ganha alguns
+              segundos; cada erro perde. O jogo termina quando o tempo zera.
+            </HelpItem>
+            <HelpItem>
+              O score aumenta com velocidade de resposta e sequência (streak)
+              de acertos consecutivos.
+            </HelpItem>
+            <HelpItem>
+              Seu recorde e melhor streak ficam salvos automaticamente.
+            </HelpItem>
+          </HelpSection>
+          <HelpSection title="Modo Treino">
+            <HelpItem>
+              Sem tempo nem score — ideal para aprender os dedilhados com
+              calma.
+            </HelpItem>
+            <HelpItem>
+              Use o botão <strong className="text-[#fffff0]/90">Ver dedilhado</strong> para
+              ver o dedilhado correto antes de responder.
+            </HelpItem>
+          </HelpSection>
+          <HelpSection title="Dica">
+            <HelpItem>
+              Comece pelo nível Iniciante com notas Naturais e vá aumentando
+              a dificuldade conforme ganhar confiança.
+            </HelpItem>
+          </HelpSection>
+        </HelpModal>
+      )}
+
       <div className="flex items-center justify-between gap-4">
         <button
           type="button"
@@ -97,13 +144,23 @@ export function QuizSetupScreen({
           ← Voltar
         </button>
 
-        <div className="text-center">
-          <h1 className="text-3xl font-black text-[#d4a853]">
-            Configurar Quiz
-          </h1>
-          <p className="mt-1 text-sm text-[#fffff0]/45">
-            Escolha o modo e a faixa antes de começar.
-          </p>
+        <div className="flex items-center gap-2">
+          <div className="text-center">
+            <h1 className="text-3xl font-black text-[#d4a853]">
+              Configurar Quiz
+            </h1>
+            <p className="mt-1 text-sm text-[#fffff0]/45">
+              Escolha o modo e a faixa antes de começar.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowHelp(true)}
+            title="Como jogar"
+            className="mb-4 flex h-6 w-6 items-center justify-center rounded-full border border-[#cd7f32]/30 text-xs font-bold text-[#cd7f32]/50 transition-colors hover:border-[#cd7f32]/70 hover:text-[#cd7f32]"
+          >
+            ?
+          </button>
         </div>
 
         <div className="rounded-lg border border-[#cd7f32]/20 bg-[#16213e] px-3 py-2 text-right text-sm text-[#fffff0]/60">

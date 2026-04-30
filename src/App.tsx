@@ -170,6 +170,7 @@ function App() {
           onExit={handleExit}
           onAudioIssue={pushNotice}
           onScoreUpdate={(score, streak) => {
+            if (mode.quizMode === "training") return;
             if (score > highScore) setHighScore(score);
             if (streak > bestStreak) setBestStreak(streak);
           }}

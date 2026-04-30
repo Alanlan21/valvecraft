@@ -3,6 +3,7 @@ import type { ControlBindings } from "../types";
 import type { Sheet, RhythmStoredResults } from "../types/sheet";
 import { allSheets } from "../data/sheets";
 import { DEFAULT_CONTROL_BINDINGS } from "../utils/controlBindings";
+import { HelpModal, HelpSection, HelpItem } from "./HelpModal";
 
 interface SheetSelectorProps {
   /** Callback when a sheet is selected */
@@ -46,6 +47,7 @@ export function SheetSelector({
   const [categoryFilter, setCategoryFilter] = useState<FilterCategory>("all");
   const [difficultyFilter, setDifficultyFilter] =
     useState<FilterDifficulty>("all");
+  const [showHelp, setShowHelp] = useState(false);
 
   // Apply filters
   let filteredSheets = allSheets;
@@ -64,6 +66,47 @@ export function SheetSelector({
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-4xl mx-auto p-4">
+      {showHelp && (
+        <HelpModal title="Como jogar — Modo Ritmo" onClose={() => setShowHelp(false)}>
+          <HelpSection title="Objetivo">
+            <HelpItem>
+              A partitura rola da direita para a esquerda. Uma linha vertical
+              (playhead) marca o ponto de toque.
+            </HelpItem>
+            <HelpItem>
+              Segure o dedilhado correto <strong className="text-[#fffff0]/90">antes</strong> de
+              a nota alcançar o playhead e solte após ela passar.
+            </HelpItem>
+          </HelpSection>
+          <HelpSection title="Julgamento">
+            <HelpItem>
+              <strong className="text-[#fffff0]/90">Perfect</strong> — timing exato, máximos
+              pontos e combo.
+            </HelpItem>
+            <HelpItem>
+              <strong className="text-[#fffff0]/90">Good</strong> — um pouco adiantado ou
+              atrasado, pontos reduzidos e combo reiniciado.
+            </HelpItem>
+            <HelpItem>
+              <strong className="text-[#fffff0]/90">Miss</strong> — nota não tocada ou
+              dedilhado errado, sem pontos.
+            </HelpItem>
+          </HelpSection>
+          <HelpSection title="Nota aberta">
+            <HelpItem>
+              Para notas sem válvulas, pressione a tecla de confirmar
+              ({controlBindings.submit.label}) em vez de não pressionar nada.
+            </HelpItem>
+          </HelpSection>
+          <HelpSection title="Dica">
+            <HelpItem>
+              Comece pelas escalas no nível Fácil para acostumar com o timing
+              antes de avançar para músicas completas.
+            </HelpItem>
+          </HelpSection>
+        </HelpModal>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <button
@@ -73,7 +116,16 @@ export function SheetSelector({
           ← Voltar
         </button>
         <h1 className="text-2xl font-bold text-white">Modo Ritmo</h1>
-        <div className="w-24" /> {/* Spacer for alignment */}
+        <div className="flex w-24 justify-end">
+          <button
+            type="button"
+            onClick={() => setShowHelp(true)}
+            title="Como jogar"
+            className="flex h-7 w-7 items-center justify-center rounded-full border border-slate-600 text-xs font-bold text-slate-400 transition-colors hover:border-slate-400 hover:text-slate-200"
+          >
+            ?
+          </button>
+        </div>
       </div>
 
       {/* Description */}

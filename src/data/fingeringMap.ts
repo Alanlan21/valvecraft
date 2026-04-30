@@ -16,8 +16,8 @@ const V123: [boolean, boolean, boolean] = [true, true, true];
  */
 export const fingeringMap: Record<string, Fingering> = {
   // --- Low register (G3 – B3) ---
-  "F#3": { valves: V123, slide: true },
-  Gb3: { valves: V123, slide: true },
+  "F#3": { valves: V123, slide: false },
+  Gb3: { valves: V123, slide: false },
   G3: { valves: V13, slide: true },
   "G#3": { valves: V23, slide: false },
   Ab3: { valves: V23, slide: false },
@@ -45,12 +45,12 @@ export const fingeringMap: Record<string, Fingering> = {
 
   // --- Upper register (C5 – G5) ---
   C5: { valves: O, slide: false },
-  "C#5": { valves: V123, slide: true },
-  Db5: { valves: V123, slide: true },
-  D5: { valves: V13, slide: true },
-  Eb5: { valves: V23, slide: false },
-  "D#5": { valves: V23, slide: false },
-  E5: { valves: V12, slide: false },
+  "C#5": { valves: V12, slide: false },
+  Db5: { valves: V12, slide: false },
+  D5: { valves: V1, slide: false },
+  Eb5: { valves: V2, slide: false },
+  "D#5": { valves: V2, slide: false },
+  E5: { valves: O, slide: false },
   F5: { valves: V1, slide: false },
   "F#5": { valves: V2, slide: false },
   Gb5: { valves: V2, slide: false },

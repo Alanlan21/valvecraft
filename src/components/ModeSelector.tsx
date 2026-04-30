@@ -166,7 +166,7 @@ export function ModeSelector({
       {/* Title */}
       <div className="text-center">
         <h1 className="mb-2 text-5xl font-black tracking-tight text-[#d4a853]">
-          Trumpove
+          Valvecraft
         </h1>
         <p className="text-sm text-[#fffff0]/50">
           Treine dedilhado, leitura e tempo no trompete
