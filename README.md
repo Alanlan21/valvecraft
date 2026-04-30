@@ -34,9 +34,8 @@ Você vê uma nota na pauta e precisa identificar e tocar o dedilhado correto na
 
 ![Quiz Setup](public/screenshots/02-quiz-setup.png)
 
-![Quiz Game]()
-<img width="492" height="412" alt="20260430-1854-17 4583405" src="https://github.com/user-attachments/assets/d4968fe0-7776-4555-af0b-2a44620dba4f" />
-
+![Quiz Game](public/screenshots/03-quiz-game.png)
+<img width="892" height="712" alt="20260430-1854-17 4583405" src="https://github.com/user-attachments/assets/d4968fe0-7776-4555-af0b-2a44620dba4f" />
 #### Configuração do Quiz
 
 Antes de começar, você escolhe:
