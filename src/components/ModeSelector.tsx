@@ -164,10 +164,11 @@ export function ModeSelector({
   }
 
   return (
-    <div className="flex w-full max-w-xl flex-col items-center gap-6">
+    <div className="flex w-full max-w-lg flex-col items-center gap-6 rounded-2xl border border-white/[0.07] bg-[#16213e]/70 px-8 py-10 shadow-2xl shadow-black/60 backdrop-blur-md">
       {/* Title */}
       <div className="text-center">
-        <h1 className="mb-2 text-5xl font-black tracking-tight text-[#d4a853]">
+        <div className="mb-2 select-none text-4xl">🎺</div>
+        <h1 className="text-gradient-gold mb-2 text-5xl font-black tracking-tight">
           Valvecraft
         </h1>
         <p className="text-sm text-[#fffff0]/50">
@@ -180,16 +181,28 @@ export function ModeSelector({
         <div className="flex w-full gap-3">
           <button
             onClick={onQuizMode}
-            className="flex-1 rounded-xl bg-[#d4a853] py-4 text-lg font-black uppercase tracking-wider text-[#1a1a2e] shadow-lg shadow-[#d4a853]/20 transition-all hover:bg-[#e0b86a] hover:shadow-[#d4a853]/40 active:scale-[0.98]"
+            className="flex flex-1 flex-col items-center gap-1.5 rounded-xl bg-linear-to-br from-[#d4a853] to-[#a86d20] px-4 py-5 text-[#1a1a2e] shadow-lg shadow-[#d4a853]/25 transition-all hover:-translate-y-0.5 hover:shadow-[#d4a853]/45 active:translate-y-0 active:scale-[0.98]"
           >
-            Modo Quiz
+            <span className="text-2xl select-none">🎵</span>
+            <span className="text-base font-black uppercase tracking-wider">
+              Modo Quiz
+            </span>
+            <span className="text-xs font-medium opacity-60">
+              Dedilhado e leitura
+            </span>
           </button>
 
           <button
             onClick={onRhythmMode}
-            className="flex-1 rounded-xl py-4 text-lg font-black uppercase tracking-wider transition-all bg-emerald-600 text-white shadow-lg shadow-emerald-600/20 hover:bg-emerald-500 hover:shadow-emerald-500/40 active:scale-[0.98]"
+            className="flex flex-1 flex-col items-center gap-1.5 rounded-xl bg-linear-to-br from-emerald-500 to-emerald-700 px-4 py-5 text-white shadow-lg shadow-emerald-700/30 transition-all hover:-translate-y-0.5 hover:shadow-emerald-500/45 active:translate-y-0 active:scale-[0.98]"
           >
-            Modo Ritmo
+            <span className="text-2xl select-none">🎼</span>
+            <span className="text-base font-black uppercase tracking-wider">
+              Modo Ritmo
+            </span>
+            <span className="text-xs font-medium opacity-70">
+              Partitura e timing
+            </span>
           </button>
         </div>
 

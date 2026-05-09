@@ -131,7 +131,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#1a1a2e] text-[#fffff0]">
+    <div className="min-h-screen text-[#fffff0]">
       {appNotice && (
         <div className="fixed inset-x-0 top-4 z-50 flex justify-center px-4">
           <div className="flex max-w-3xl items-start gap-3 rounded-xl border border-amber-500/30 bg-[#16213e]/95 px-4 py-3 text-sm text-[#fffff0] shadow-xl shadow-black/40 backdrop-blur">

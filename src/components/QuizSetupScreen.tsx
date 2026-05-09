@@ -91,15 +91,18 @@ export function QuizSetupScreen({
   return (
     <div className="flex w-full max-w-4xl flex-col gap-6">
       {showHelp && (
-        <HelpModal title="Como jogar — Modo Quiz" onClose={() => setShowHelp(false)}>
+        <HelpModal
+          title="Como jogar — Modo Quiz"
+          onClose={() => setShowHelp(false)}
+        >
           <HelpSection title="Objetivo">
             <HelpItem>
               Uma nota aparece na pauta. Pressione as válvulas corretas do
               trompete para tocar aquela nota.
             </HelpItem>
             <HelpItem>
-              Use as teclas configuradas para pressionar as válvulas 1, 2 e 3
-              e o slide. Para nota aberta (sem válvulas), pressione a tecla de
+              Use as teclas configuradas para pressionar as válvulas 1, 2 e 3 e
+              o slide. Para nota aberta (sem válvulas), pressione a tecla de
               confirmar.
             </HelpItem>
           </HelpSection>
@@ -109,8 +112,8 @@ export function QuizSetupScreen({
               segundos; cada erro perde. O jogo termina quando o tempo zera.
             </HelpItem>
             <HelpItem>
-              O score aumenta com velocidade de resposta e sequência (streak)
-              de acertos consecutivos.
+              O score aumenta com velocidade de resposta e sequência (streak) de
+              acertos consecutivos.
             </HelpItem>
             <HelpItem>
               Seu recorde e melhor streak ficam salvos automaticamente.
@@ -118,18 +121,18 @@ export function QuizSetupScreen({
           </HelpSection>
           <HelpSection title="Modo Treino">
             <HelpItem>
-              Sem tempo nem score — ideal para aprender os dedilhados com
-              calma.
+              Sem tempo nem score — ideal para aprender os dedilhados com calma.
             </HelpItem>
             <HelpItem>
-              Use o botão <strong className="text-[#fffff0]/90">Ver dedilhado</strong> para
+              Use o botão{" "}
+              <strong className="text-[#fffff0]/90">Ver dedilhado</strong> para
               ver o dedilhado correto antes de responder.
             </HelpItem>
           </HelpSection>
           <HelpSection title="Dica">
             <HelpItem>
-              Comece pelo nível Iniciante com notas Naturais e vá aumentando
-              a dificuldade conforme ganhar confiança.
+              Comece pelo nível Iniciante com notas Naturais e vá aumentando a
+              dificuldade conforme ganhar confiança.
             </HelpItem>
           </HelpSection>
         </HelpModal>
@@ -146,7 +149,7 @@ export function QuizSetupScreen({
 
         <div className="flex items-center gap-2">
           <div className="text-center">
-            <h1 className="text-3xl font-black text-[#d4a853]">
+            <h1 className="text-gradient-gold text-3xl font-black">
               Configurar Quiz
             </h1>
             <p className="mt-1 text-sm text-[#fffff0]/45">
@@ -299,7 +302,7 @@ export function QuizSetupScreen({
             disabled={previewNotes.length === 0}
             className={`mt-4 w-full rounded-xl py-3 text-lg font-black uppercase tracking-wider transition-all ${
               previewNotes.length > 0
-                ? "bg-[#d4a853] text-[#1a1a2e] shadow-lg shadow-[#d4a853]/20 hover:bg-[#e0b86a] hover:shadow-[#d4a853]/40 active:scale-[0.98]"
+                ? "bg-linear-to-br from-[#d4a853] to-[#a86d20] text-[#1a1a2e] shadow-lg shadow-[#d4a853]/20 hover:shadow-[#d4a853]/40 hover:-translate-y-0.5 active:scale-[0.98] active:translate-y-0"
                 : "cursor-not-allowed bg-[#2a2a4a] text-[#fffff0]/30"
             }`}
           >

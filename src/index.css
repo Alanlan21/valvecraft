@@ -5,7 +5,13 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background-color: #1a1a2e;
+  min-height: 100%;
+  background: radial-gradient(
+    ellipse at 20% 25%,
+    #1d1f4e 0%,
+    #111228 55%,
+    #0b0b18 100%
+  );
   color: #fffff0;
   font-family:
     "Inter",
@@ -16,10 +22,23 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Reusable gold gradient text */
+.text-gradient-gold {
+  background: linear-gradient(135deg, #f5dd7a 0%, #d4a853 45%, #a86d20 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 /* Heat bar glow pulse — speed is set per-tier via inline style */
 @keyframes heat-glow {
-  0%, 100% { filter: brightness(1) saturate(1); }
-  50%       { filter: brightness(1.45) saturate(1.25); }
+  0%,
+  100% {
+    filter: brightness(1) saturate(1);
+  }
+  50% {
+    filter: brightness(1.45) saturate(1.25);
+  }
 }
 
 /* Prevent text selection during gameplay */
@@ -78,11 +97,22 @@ kbd {
 }
 
 @keyframes fb-shake {
-  0%, 100% { transform: translateX(0); }
-  20%       { transform: translateX(-12px); }
-  40%       { transform: translateX(12px); }
-  60%       { transform: translateX(-8px); }
-  80%       { transform: translateX(8px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-12px);
+  }
+  40% {
+    transform: translateX(12px);
+  }
+  60% {
+    transform: translateX(-8px);
+  }
+  80% {
+    transform: translateX(8px);
+  }
 }
 
 .fb-indicator {

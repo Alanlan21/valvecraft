@@ -19,12 +19,13 @@ export function GameOverOverlay({
     totalAnswers > 0 ? Math.round((correctAnswers / totalAnswers) * 100) : 0;
 
   return (
-    <div className="absolute inset-0 z-20 flex items-center justify-center bg-[#1a1a2e]/90 px-4">
-      <div className="w-full max-w-md rounded-xl border border-[#cd7f32]/30 bg-[#16213e] p-6 text-center shadow-2xl shadow-black/40">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#cd7f32]/60">
+    <div className="absolute inset-0 z-20 flex items-center justify-center bg-[#0b0b18]/88 px-4 backdrop-blur-sm">
+      <div className="w-full max-w-md rounded-2xl border border-[#d4a853]/20 bg-[#16213e] p-6 text-center shadow-2xl shadow-black/60">
+        <div className="mb-3 select-none text-5xl">🏆</div>
+        <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-[#cd7f32]/60">
           Fim da corrida
         </p>
-        <h2 className="text-4xl font-black tabular-nums text-[#d4a853]">
+        <h2 className="text-gradient-gold text-5xl font-black tabular-nums">
           {score.toLocaleString()}
         </h2>
         <p className="mt-1 text-sm text-[#fffff0]/40">score final</p>
@@ -60,7 +61,7 @@ export function GameOverOverlay({
           <button
             type="button"
             onClick={onRestart}
-            className="flex-1 rounded-lg bg-[#d4a853] px-4 py-3 text-sm font-black uppercase tracking-wider text-[#1a1a2e] transition-colors hover:bg-[#e0b86a]"
+            className="flex-1 rounded-xl bg-linear-to-br from-[#d4a853] to-[#a86d20] px-4 py-3 text-sm font-black uppercase tracking-wider text-[#1a1a2e] shadow-lg shadow-[#d4a853]/25 transition-all hover:shadow-[#d4a853]/45 active:scale-[0.98]"
           >
             Jogar de novo
           </button>
