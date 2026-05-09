@@ -28,7 +28,11 @@ function createStaveNote(key: string): VF.StaveNote {
   return vfNote;
 }
 
-export function StaffDisplay({ note, trumpetType, hideLabel = false }: StaffDisplayProps) {
+export function StaffDisplay({
+  note,
+  trumpetType,
+  hideLabel = false,
+}: StaffDisplayProps) {
   const containerId = useId();
   const stableId = `vf-staff-${containerId.replace(/:/g, "")}`;
   const containerRef = useRef<HTMLDivElement>(null);

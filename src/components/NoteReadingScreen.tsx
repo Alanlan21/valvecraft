@@ -59,7 +59,11 @@ export function NoteReadingScreen({
   const streakRef = useRef(streak);
   streakRef.current = streak;
 
-  const { playNote, playError } = useTrumpetAudio(trumpetType, "mono", onAudioIssue);
+  const { playNote, playError } = useTrumpetAudio(
+    trumpetType,
+    "mono",
+    onAudioIssue,
+  );
 
   const nextNote = useCallback((pool: Note[], prevId?: string) => {
     const note = getRandomNote(pool, prevId);
@@ -155,9 +159,7 @@ export function NoteReadingScreen({
       </div>
 
       {/* Prompt */}
-      <p className="text-center text-sm text-[#fffff0]/45">
-        Qual é essa nota?
-      </p>
+      <p className="text-center text-sm text-[#fffff0]/45">Qual é essa nota?</p>
 
       {/* Staff — label hidden until correct answer */}
       {currentNote && (
@@ -218,8 +220,7 @@ export function NoteReadingScreen({
           </strong>
         </span>
         <span>
-          Sequência:{" "}
-          <strong className="text-[#fffff0]/60">{streak}</strong>
+          Sequência: <strong className="text-[#fffff0]/60">{streak}</strong>
         </span>
       </div>
     </div>
