@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import * as Tone from "tone";
 import type {
   AudioMode,
   GameMode,
@@ -47,6 +48,21 @@ function App() {
 
   const pushNotice = useCallback((message: string, persistent = false) => {
     setAppNotice({ message, persistent });
+  }, []);
+
+  // Unlock the AudioContext on the first user gesture anywhere in the app.
+  // This must be global so the context is running before GameScreen's first
+  // note plays (which happens 450 ms after mount, before any user tap).
+  useEffect(() => {
+    function unlock() {
+      Tone.start();
+    }
+    window.addEventListener("pointerdown", unlock, { once: true });
+    window.addEventListener("keydown", unlock, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("keydown", unlock);
+    };
   }, []);
 
   useEffect(() => {

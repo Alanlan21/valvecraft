@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { AudioMode, ControlBindings, GameMode, Note } from "../types";
 import { useGameEngine } from "../hooks/useGameEngine";
 import { useKeyboardInput } from "../hooks/useKeyboardInput";
+import { useTouchDevice } from "../hooks/useTouchDevice";
 import { useTrumpetAudio } from "../hooks/useTrumpetAudio";
 import { NOTE_REVEAL_DELAY_MS } from "../utils/gameRules";
 import { fingeringToNoteId } from "../utils/noteUtils";
@@ -11,6 +12,7 @@ import { ValveIndicator } from "./ValveIndicator";
 import { FeedbackOverlay } from "./FeedbackOverlay";
 import { GameOverOverlay } from "./GameOverOverlay";
 import { ScoreBoard } from "./ScoreBoard";
+import { TouchValveControls } from "./TouchValveControls";
 
 interface GameScreenProps {
   audioMode: AudioMode;
@@ -29,6 +31,8 @@ export function GameScreen({
   onAudioIssue,
   onScoreUpdate,
 }: GameScreenProps) {
+  const isTouchDevice = useTouchDevice();
+
   const engine = useGameEngine();
   const {
     bestStreak,
@@ -61,7 +65,7 @@ export function GameScreen({
     [gameOver, lastResult, submitAnswer],
   );
 
-  const { currentInput, resetInput } = useKeyboardInput(
+  const { currentInput, resetInput, setValve } = useKeyboardInput(
     gameActive && !gameOver && !lastResult,
     handleSubmit,
     controlBindings,
@@ -195,6 +199,7 @@ export function GameScreen({
         <ValveIndicator
           controlBindings={controlBindings}
           currentInput={currentInput}
+          hideSlide={isTouchDevice}
         />
       </div>
 
@@ -216,20 +221,43 @@ export function GameScreen({
                 <ValveIndicator
                   controlBindings={controlBindings}
                   currentInput={fingeringMap[displayNote.id]}
+                  hideSlide={isTouchDevice}
                 />
               </div>
             )}
           </div>
         )}
 
-      {/* Submit hint */}
-      <div className="mt-2 text-center text-sm text-[#fffff0]/20">
-        Segure as válvulas e pressione{" "}
-        <kbd className="rounded bg-[#16213e] px-2 py-0.5 font-mono text-[#d4a853]/60">
-          {controlBindings.submit.label}
-        </kbd>{" "}
-        para confirmar
-      </div>
+      {/* Touch controls — shown on touch devices */}
+      {isTouchDevice && (
+        <div className="mt-2">
+          <TouchValveControls
+            currentInput={currentInput}
+            onValveChange={setValve}
+            onSubmit={() => {
+              // Auto-fill slide based on the expected fingering for the current
+              // note — the player has no way to control the slide on touch.
+              const expectedSlide =
+                currentNote != null
+                  ? (fingeringMap[currentNote.id]?.slide ?? false)
+                  : false;
+              handleSubmit({ ...currentInput, slide: expectedSlide });
+            }}
+            disabled={!gameActive || gameOver || !!lastResult}
+          />
+        </div>
+      )}
+
+      {/* Submit hint — shown on non-touch devices only */}
+      {!isTouchDevice && (
+        <div className="mt-2 text-center text-sm text-[#fffff0]/20">
+          Segure as válvulas e pressione{" "}
+          <kbd className="rounded bg-[#16213e] px-2 py-0.5 font-mono text-[#d4a853]/60">
+            {controlBindings.submit.label}
+          </kbd>{" "}
+          para confirmar
+        </div>
+      )}
 
       {/* Feedback overlay */}
       {!gameOver && (

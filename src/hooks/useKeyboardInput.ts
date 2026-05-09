@@ -19,6 +19,8 @@ export function useKeyboardInput(
   const inputRef = useRef<Fingering>(EMPTY_FINGERING);
   const onSubmitRef = useRef(onSubmit);
   onSubmitRef.current = onSubmit;
+  const activeRef = useRef(active);
+  activeRef.current = active;
 
   const resetInput = useCallback(() => {
     const empty = {
@@ -27,6 +29,17 @@ export function useKeyboardInput(
     };
     inputRef.current = empty;
     setCurrentInput(empty);
+  }, []);
+
+  const setValve = useCallback((index: 0 | 1 | 2, pressed: boolean) => {
+    if (!activeRef.current) return;
+    const prev = inputRef.current;
+    const valves: [boolean, boolean, boolean] = [...prev.valves];
+    if (valves[index] === pressed) return;
+    valves[index] = pressed;
+    const next: Fingering = { valves, slide: prev.slide };
+    inputRef.current = next;
+    setCurrentInput(next);
   }, []);
 
   useEffect(() => {
@@ -114,5 +127,5 @@ export function useKeyboardInput(
     };
   }, [active, controlBindings]);
 
-  return { currentInput, resetInput };
+  return { currentInput, resetInput, setValve };
 }

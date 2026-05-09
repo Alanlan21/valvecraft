@@ -12,6 +12,7 @@ import {
   getControlConflict,
   isReservedControlCode,
 } from "../utils/controlBindings";
+import { useTouchDevice } from "../hooks/useTouchDevice";
 
 interface ModeSelectorProps {
   audioMode: AudioMode;
@@ -65,6 +66,7 @@ export function ModeSelector({
     null,
   );
   const [controlMessage, setControlMessage] = useState<string | null>(null);
+  const isTouchDevice = useTouchDevice();
 
   const selectedTrumpet = TRUMPET_OPTIONS.find(
     (opt) => opt.value === trumpetType,
@@ -199,15 +201,17 @@ export function ModeSelector({
 
       {/* Settings categories */}
       <div className="grid w-full grid-cols-2 gap-2">
-        {settingButtons.map((item) => {
-          const selected = activePanel === item.panel;
+        {settingButtons
+          .filter((item) => !(isTouchDevice && item.panel === "controls"))
+          .map((item) => {
+            const selected = activePanel === item.panel;
 
-          return (
-            <button
-              key={item.panel}
-              type="button"
-              onClick={() => togglePanel(item.panel)}
-              className={`
+            return (
+              <button
+                key={item.panel}
+                type="button"
+                onClick={() => togglePanel(item.panel)}
+                className={`
                 rounded-lg border-2 px-3 py-3 text-left transition-all
                 ${
                   selected
@@ -215,16 +219,16 @@ export function ModeSelector({
                     : "border-[#cd7f32]/20 bg-[#16213e] text-[#fffff0]/60 hover:border-[#cd7f32]/40"
                 }
               `}
-            >
-              <div className="text-xs font-semibold uppercase tracking-wider opacity-60">
-                {item.label}
-              </div>
-              <div className="mt-1 truncate text-sm font-bold">
-                {item.value}
-              </div>
-            </button>
-          );
-        })}
+              >
+                <div className="text-xs font-semibold uppercase tracking-wider opacity-60">
+                  {item.label}
+                </div>
+                <div className="mt-1 truncate text-sm font-bold">
+                  {item.value}
+                </div>
+              </button>
+            );
+          })}
       </div>
 
       {activePanel && (
@@ -262,13 +266,15 @@ export function ModeSelector({
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-[#cd7f32]">
                   Controles
                 </h2>
-                <button
-                  type="button"
-                  onClick={handleControlBindingsReset}
-                  className="rounded border border-[#cd7f32]/30 px-2 py-1 text-xs text-[#cd7f32]/70 transition-colors hover:border-[#cd7f32]/60 hover:text-[#cd7f32]"
-                >
-                  Restaurar padrão
-                </button>
+                {!isTouchDevice && (
+                  <button
+                    type="button"
+                    onClick={handleControlBindingsReset}
+                    className="rounded border border-[#cd7f32]/30 px-2 py-1 text-xs text-[#cd7f32]/70 transition-colors hover:border-[#cd7f32]/60 hover:text-[#cd7f32]"
+                  >
+                    Restaurar padrão
+                  </button>
+                )}
               </div>
 
               <div className="mb-4 rounded-md bg-[#1a1a2e]/70 p-3">
@@ -299,25 +305,26 @@ export function ModeSelector({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-2 text-sm text-[#fffff0]/60 sm:grid-cols-2">
-                {CONTROL_ACTIONS.map((action) => {
-                  const active = listeningAction === action;
+              {!isTouchDevice && (
+                <div className="grid grid-cols-1 gap-2 text-sm text-[#fffff0]/60 sm:grid-cols-2">
+                  {CONTROL_ACTIONS.map((action) => {
+                    const active = listeningAction === action;
 
-                  return (
-                    <div
-                      key={action}
-                      className="flex items-center justify-between gap-3 rounded-md bg-[#1a1a2e]/70 px-3 py-2"
-                    >
-                      <span>{CONTROL_ACTION_LABELS[action]}</span>
-                      <button
-                        type="button"
-                        aria-label={`Alterar tecla para ${CONTROL_ACTION_LABELS[action]}`}
-                        onBlur={() => handleControlBlur(action)}
-                        onClick={() => beginControlCapture(action)}
-                        onKeyDown={(event) =>
-                          handleControlKeyDown(action, event)
-                        }
-                        className={`
+                    return (
+                      <div
+                        key={action}
+                        className="flex items-center justify-between gap-3 rounded-md bg-[#1a1a2e]/70 px-3 py-2"
+                      >
+                        <span>{CONTROL_ACTION_LABELS[action]}</span>
+                        <button
+                          type="button"
+                          aria-label={`Alterar tecla para ${CONTROL_ACTION_LABELS[action]}`}
+                          onBlur={() => handleControlBlur(action)}
+                          onClick={() => beginControlCapture(action)}
+                          onKeyDown={(event) =>
+                            handleControlKeyDown(action, event)
+                          }
+                          className={`
                           min-w-24 rounded border px-2 py-1 text-center font-mono text-xs transition-colors
                           ${
                             active
@@ -325,15 +332,16 @@ export function ModeSelector({
                               : "border-[#cd7f32]/30 bg-[#16213e] text-[#d4a853]"
                           }
                         `}
-                      >
-                        {active
-                          ? "Pressione..."
-                          : controlBindings[action].label}
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
+                        >
+                          {active
+                            ? "Pressione..."
+                            : controlBindings[action].label}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
 
               {controlMessage && (
                 <p className="mt-3 text-xs text-[#fffff0]/40">
