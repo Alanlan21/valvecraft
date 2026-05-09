@@ -62,4 +62,5 @@ export type GameScreen =
   | "game"
   | "result"
   | "rhythm-select"
-  | "rhythm-play";
+  | "rhythm-play"
+  | "note-reading";

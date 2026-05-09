@@ -26,6 +26,7 @@ interface ModeSelectorProps {
   onControlBindingsReset: () => void;
   onQuizMode: () => void;
   onRhythmMode: () => void;
+  onNoteReadingMode: () => void;
 }
 
 type SettingsPanel = "trumpet" | "controls";
@@ -60,6 +61,7 @@ export function ModeSelector({
   onControlBindingsReset,
   onQuizMode,
   onRhythmMode,
+  onNoteReadingMode,
 }: ModeSelectorProps) {
   const [activePanel, setActivePanel] = useState<SettingsPanel | null>(null);
   const [listeningAction, setListeningAction] = useState<ControlAction | null>(
@@ -205,6 +207,23 @@ export function ModeSelector({
             </span>
           </button>
         </div>
+
+        {/* Note Reading — learning mode, no fingerings needed */}
+        <button
+          onClick={onNoteReadingMode}
+          className="flex w-full items-center gap-3 rounded-xl border border-violet-500/30 bg-violet-900/20 px-4 py-3 text-left text-violet-300 transition-all hover:-translate-y-0.5 hover:border-violet-400/50 hover:bg-violet-900/30 active:translate-y-0 active:scale-[0.98]"
+        >
+          <span className="select-none text-2xl">📖</span>
+          <div className="flex-1">
+            <div className="text-sm font-black uppercase tracking-wide">
+              Leitura de Notas
+            </div>
+            <div className="text-xs font-medium opacity-60">
+              Aprenda a identificar notas na pauta
+            </div>
+          </div>
+          <span className="text-xs opacity-40">→</span>
+        </button>
 
         <p className="text-center text-xs text-[#fffff0]/35">
           Escolha um modo para começar. Afinação ativa:{" "}

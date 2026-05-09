@@ -9,6 +9,8 @@ import {
 interface StaffDisplayProps {
   note: Note | null;
   trumpetType: TrumpetType;
+  /** When true, hides the note name and frequency label above the staff. */
+  hideLabel?: boolean;
 }
 
 function createStaveNote(key: string): VF.StaveNote {
@@ -26,7 +28,7 @@ function createStaveNote(key: string): VF.StaveNote {
   return vfNote;
 }
 
-export function StaffDisplay({ note, trumpetType }: StaffDisplayProps) {
+export function StaffDisplay({ note, trumpetType, hideLabel = false }: StaffDisplayProps) {
   const containerId = useId();
   const stableId = `vf-staff-${containerId.replace(/:/g, "")}`;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -129,7 +131,7 @@ export function StaffDisplay({ note, trumpetType }: StaffDisplayProps) {
   return (
     <div className="flex items-center justify-center">
       <div className="w-full max-w-140 rounded-xl bg-[#16213e] p-4 shadow-lg shadow-black/30">
-        {note && (
+        {note && !hideLabel && (
           <div className="flex flex-wrap items-end justify-center gap-x-3 gap-y-1 pb-3 text-center">
             <span className="text-[clamp(1.5rem,3vw,2.35rem)] font-medium tracking-[0.02em] text-[#fffff0]">
               {noteHeading}

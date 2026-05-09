@@ -16,6 +16,7 @@ import { QuizSetupScreen } from "./components/QuizSetupScreen";
 import { GameScreen as GameView } from "./components/GameScreen";
 import { SheetSelector } from "./components/SheetSelector";
 import { RhythmModeScreen } from "./components/RhythmModeScreen";
+import { NoteReadingScreen } from "./components/NoteReadingScreen";
 
 function App() {
   const [screen, setScreen] = useState<GameScreen>("menu");
@@ -97,6 +98,10 @@ function App() {
     setScreen("rhythm-select");
   }
 
+  function handleNoteReadingMode() {
+    setScreen("note-reading");
+  }
+
   function handleSheetSelect(sheet: Sheet) {
     setSelectedSheet(sheet);
     setScreen("rhythm-play");
@@ -162,6 +167,7 @@ function App() {
             onControlBindingsReset={resetControlBindings}
             onQuizMode={handleQuizMode}
             onRhythmMode={handleRhythmMode}
+            onNoteReadingMode={handleNoteReadingMode}
           />
         </div>
       )}
@@ -191,6 +197,16 @@ function App() {
             if (streak > bestStreak) setBestStreak(streak);
           }}
         />
+      )}
+
+      {screen === "note-reading" && (
+        <div className="flex min-h-screen flex-col items-center justify-center px-4 py-8">
+          <NoteReadingScreen
+            trumpetType={trumpetType}
+            onBack={handleExit}
+            onAudioIssue={pushNotice}
+          />
+        </div>
       )}
 
       {screen === "rhythm-select" && (
