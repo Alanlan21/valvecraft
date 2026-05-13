@@ -1,8 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import type { Note, RangeLevel, TrumpetType } from "../types";
-import { getNotesForMode, getRandomNote } from "../utils/noteUtils";
+import {
+  getNotesForMode,
+  getRandomNote,
+  toDisplayName,
+} from "../utils/noteUtils";
 import { StaffDisplay } from "./StaffDisplay";
 import { useTrumpetAudio } from "../hooks/useTrumpetAudio";
+import { useNomenclature } from "../contexts/NomenclatureContext";
 
 interface NoteReadingScreenProps {
   trumpetType: TrumpetType;
@@ -58,6 +63,8 @@ export function NoteReadingScreen({
   const notePoolRef = useRef<Note[]>([]);
   const streakRef = useRef(streak);
   streakRef.current = streak;
+
+  const nomenclature = useNomenclature();
 
   const { playNote, playError } = useTrumpetAudio(
     trumpetType,
@@ -205,7 +212,7 @@ export function NoteReadingScreen({
               disabled={phase !== "question"}
               className={`rounded-xl border-2 py-6 text-3xl font-black transition-all duration-150 ${btnClass}`}
             >
-              {opt.name}
+              {toDisplayName(opt.name, nomenclature)}
             </button>
           );
         })}

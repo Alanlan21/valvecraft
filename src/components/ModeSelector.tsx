@@ -3,6 +3,7 @@ import type {
   AudioMode,
   ControlAction,
   ControlBindings,
+  NoteNomenclature,
   TrumpetType,
 } from "../types";
 import {
@@ -18,8 +19,10 @@ interface ModeSelectorProps {
   audioMode: AudioMode;
   controlBindings: ControlBindings;
   trumpetType: TrumpetType;
+  nomenclature: NoteNomenclature;
   onAudioModeChange: (mode: AudioMode) => void;
   onTrumpetTypeChange: (type: TrumpetType) => void;
+  onNomenclatureChange: (n: NoteNomenclature) => void;
   onControlBindingsChange: (
     value: ControlBindings | ((prev: ControlBindings) => ControlBindings),
   ) => void;
@@ -29,7 +32,7 @@ interface ModeSelectorProps {
   onNoteReadingMode: () => void;
 }
 
-type SettingsPanel = "trumpet" | "controls";
+type SettingsPanel = "trumpet" | "controls" | "nomenclature";
 
 const TRUMPET_OPTIONS: {
   value: TrumpetType;
@@ -55,8 +58,10 @@ export function ModeSelector({
   audioMode,
   controlBindings,
   trumpetType,
+  nomenclature,
   onAudioModeChange,
   onTrumpetTypeChange,
+  onNomenclatureChange,
   onControlBindingsChange,
   onControlBindingsReset,
   onQuizMode,
@@ -87,6 +92,11 @@ export function ModeSelector({
       panel: "controls",
       label: "Controles",
       value: `${controlBindings.valve1.label}/${controlBindings.valve2.label}/${controlBindings.valve3.label}`,
+    },
+    {
+      panel: "nomenclature",
+      label: "Notas",
+      value: nomenclature === "anglo" ? "C D E (Anglo)" : "Dó Ré Mi (Latino)",
     },
   ];
 
@@ -232,7 +242,7 @@ export function ModeSelector({
       </div>
 
       {/* Settings categories */}
-      <div className="grid w-full grid-cols-2 gap-2">
+      <div className="grid w-full grid-cols-2 gap-2 sm:grid-cols-3">
         {settingButtons
           .filter((item) => !(isTouchDevice && item.panel === "controls"))
           .map((item) => {
@@ -380,6 +390,48 @@ export function ModeSelector({
                   {controlMessage}
                 </p>
               )}
+            </div>
+          )}
+
+          {activePanel === "nomenclature" && (
+            <div>
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#cd7f32]">
+                Nomenclatura das Notas
+              </h2>
+              <div className="grid grid-cols-2 gap-2">
+                {(
+                  [
+                    {
+                      value: "anglo" as const,
+                      label: "Anglo / Germânica",
+                      example: "C  D  E  F  G  A  B",
+                    },
+                    {
+                      value: "latin" as const,
+                      label: "Latino / Solfejo",
+                      example: "Dó Ré Mi Fá Sol Lá Si",
+                    },
+                  ] as const
+                ).map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => onNomenclatureChange(opt.value)}
+                    className={`
+                      rounded-lg border-2 px-3 py-3 text-left transition-all
+                      ${
+                        nomenclature === opt.value
+                          ? "border-[#d4a853] bg-[#d4a853]/10 text-[#d4a853]"
+                          : "border-[#cd7f32]/20 bg-[#1a1a2e] text-[#fffff0]/60 hover:border-[#cd7f32]/40"
+                      }
+                    `}
+                  >
+                    <div className="text-sm font-bold">{opt.label}</div>
+                    <div className="mt-1 font-mono text-xs opacity-60">
+                      {opt.example}
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>

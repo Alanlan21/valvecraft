@@ -5,6 +5,7 @@ import {
   formatQuizNoteLabel,
   getQuizDisplayFrequency,
 } from "../utils/noteUtils";
+import { useNomenclature } from "../contexts/NomenclatureContext";
 
 interface StaffDisplayProps {
   note: Note | null;
@@ -36,6 +37,7 @@ export function StaffDisplay({
   const containerId = useId();
   const stableId = `vf-staff-${containerId.replace(/:/g, "")}`;
   const containerRef = useRef<HTMLDivElement>(null);
+  const nomenclature = useNomenclature();
 
   useEffect(() => {
     const div = containerRef.current;
@@ -129,7 +131,7 @@ export function StaffDisplay({
     };
   }, [note, stableId]);
 
-  const noteHeading = note ? formatQuizNoteLabel(note) : "";
+  const noteHeading = note ? formatQuizNoteLabel(note, nomenclature) : "";
   const frequency = note ? getQuizDisplayFrequency(note, trumpetType) : null;
 
   return (

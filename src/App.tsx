@@ -4,6 +4,7 @@ import type {
   AudioMode,
   GameMode,
   GameScreen,
+  NoteNomenclature,
   TrumpetType,
   Sheet,
   RhythmSessionResult,
@@ -11,6 +12,7 @@ import type {
 } from "./types";
 import { useControlBindings } from "./hooks/useControlBindings";
 import { useLocalStorage } from "./hooks/useLocalStorage";
+import { NomenclatureContext } from "./contexts/NomenclatureContext";
 import { ModeSelector } from "./components/ModeSelector";
 import { QuizSetupScreen } from "./components/QuizSetupScreen";
 import { GameScreen as GameView } from "./components/GameScreen";
@@ -34,6 +36,10 @@ function App() {
   const [audioMode, setAudioMode] = useLocalStorage<AudioMode>(
     "valvecraft:audioMode",
     "mono",
+  );
+  const [nomenclature, setNomenclature] = useLocalStorage<NoteNomenclature>(
+    "valvecraft:nomenclature",
+    "anglo",
   );
   const [rhythmBestResults, setRhythmBestResults] =
     useLocalStorage<RhythmStoredResults>("valvecraft:rhythmBestResults", {});
@@ -136,103 +142,107 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen text-[#fffff0]">
-      {appNotice && (
-        <div className="fixed inset-x-0 top-4 z-50 flex justify-center px-4">
-          <div className="flex max-w-3xl items-start gap-3 rounded-xl border border-amber-500/30 bg-[#16213e]/95 px-4 py-3 text-sm text-[#fffff0] shadow-xl shadow-black/40 backdrop-blur">
-            <span className="mt-0.5 text-amber-400">Aviso</span>
-            <span className="flex-1 text-[#fffff0]/85">
-              {appNotice.message}
-            </span>
-            <button
-              type="button"
-              onClick={() => setAppNotice(null)}
-              className="text-[#fffff0]/45 transition-colors hover:text-[#fffff0]/80"
-            >
-              Fechar
-            </button>
+    <NomenclatureContext.Provider value={nomenclature}>
+      <div className="min-h-screen text-[#fffff0]">
+        {appNotice && (
+          <div className="fixed inset-x-0 top-4 z-50 flex justify-center px-4">
+            <div className="flex max-w-3xl items-start gap-3 rounded-xl border border-amber-500/30 bg-[#16213e]/95 px-4 py-3 text-sm text-[#fffff0] shadow-xl shadow-black/40 backdrop-blur">
+              <span className="mt-0.5 text-amber-400">Aviso</span>
+              <span className="flex-1 text-[#fffff0]/85">
+                {appNotice.message}
+              </span>
+              <button
+                type="button"
+                onClick={() => setAppNotice(null)}
+                className="text-[#fffff0]/45 transition-colors hover:text-[#fffff0]/80"
+              >
+                Fechar
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {screen === "menu" && (
-        <div className="flex min-h-screen flex-col items-center justify-center px-4 py-8">
-          <ModeSelector
+        {screen === "menu" && (
+          <div className="flex min-h-screen flex-col items-center justify-center px-4 py-8">
+            <ModeSelector
+              audioMode={audioMode}
+              controlBindings={controlBindings}
+              trumpetType={trumpetType}
+              onAudioModeChange={setAudioMode}
+              onTrumpetTypeChange={setTrumpetType}
+              onControlBindingsChange={setControlBindings}
+              onControlBindingsReset={resetControlBindings}
+              onQuizMode={handleQuizMode}
+              onRhythmMode={handleRhythmMode}
+              onNoteReadingMode={handleNoteReadingMode}
+              nomenclature={nomenclature}
+              onNomenclatureChange={setNomenclature}
+            />
+          </div>
+        )}
+
+        {screen === "quiz-setup" && (
+          <div className="flex min-h-screen flex-col items-center justify-center px-4 py-8">
+            <QuizSetupScreen
+              trumpetType={trumpetType}
+              highScore={highScore}
+              bestStreak={bestStreak}
+              onBack={handleExit}
+              onStart={handleStart}
+            />
+          </div>
+        )}
+
+        {screen === "game" && mode && (
+          <GameView
             audioMode={audioMode}
             controlBindings={controlBindings}
-            trumpetType={trumpetType}
-            onAudioModeChange={setAudioMode}
-            onTrumpetTypeChange={setTrumpetType}
-            onControlBindingsChange={setControlBindings}
-            onControlBindingsReset={resetControlBindings}
-            onQuizMode={handleQuizMode}
-            onRhythmMode={handleRhythmMode}
-            onNoteReadingMode={handleNoteReadingMode}
-          />
-        </div>
-      )}
-
-      {screen === "quiz-setup" && (
-        <div className="flex min-h-screen flex-col items-center justify-center px-4 py-8">
-          <QuizSetupScreen
-            trumpetType={trumpetType}
-            highScore={highScore}
-            bestStreak={bestStreak}
-            onBack={handleExit}
-            onStart={handleStart}
-          />
-        </div>
-      )}
-
-      {screen === "game" && mode && (
-        <GameView
-          audioMode={audioMode}
-          controlBindings={controlBindings}
-          mode={mode}
-          onExit={handleExit}
-          onAudioIssue={pushNotice}
-          onScoreUpdate={(score, streak) => {
-            if (mode.quizMode === "training") return;
-            if (score > highScore) setHighScore(score);
-            if (streak > bestStreak) setBestStreak(streak);
-          }}
-        />
-      )}
-
-      {screen === "note-reading" && (
-        <div className="flex min-h-screen flex-col items-center justify-center px-4 py-8">
-          <NoteReadingScreen
-            trumpetType={trumpetType}
-            onBack={handleExit}
+            mode={mode}
+            onExit={handleExit}
             onAudioIssue={pushNotice}
+            onScoreUpdate={(score, streak) => {
+              if (mode.quizMode === "training") return;
+              if (score > highScore) setHighScore(score);
+              if (streak > bestStreak) setBestStreak(streak);
+            }}
           />
-        </div>
-      )}
+        )}
 
-      {screen === "rhythm-select" && (
-        <div className="flex min-h-screen flex-col items-center justify-center px-4 py-8">
-          <SheetSelector
-            onSelect={handleSheetSelect}
-            onBack={handleExit}
-            bestResults={rhythmBestResults}
-            controlBindings={controlBindings}
-          />
-        </div>
-      )}
+        {screen === "note-reading" && (
+          <div className="flex min-h-screen flex-col items-center justify-center px-4 py-8">
+            <NoteReadingScreen
+              trumpetType={trumpetType}
+              onBack={handleExit}
+              onAudioIssue={pushNotice}
+            />
+          </div>
+        )}
 
-      {screen === "rhythm-play" && selectedSheet && (
-        <div className="flex min-h-screen flex-col items-center justify-center px-4 py-8">
-          <RhythmModeScreen
-            sheet={selectedSheet}
-            trumpetType={trumpetType}
-            controlBindings={controlBindings}
-            onBack={handleBackToSheetSelect}
-            onComplete={handleRhythmComplete}
-            onAudioIssue={pushNotice}
-          />
-        </div>
-      )}
-    </div>
+        {screen === "rhythm-select" && (
+          <div className="flex min-h-screen flex-col items-center justify-center px-4 py-8">
+            <SheetSelector
+              onSelect={handleSheetSelect}
+              onBack={handleExit}
+              bestResults={rhythmBestResults}
+              controlBindings={controlBindings}
+            />
+          </div>
+        )}
+
+        {screen === "rhythm-play" && selectedSheet && (
+          <div className="flex min-h-screen flex-col items-center justify-center px-4 py-8">
+            <RhythmModeScreen
+              sheet={selectedSheet}
+              trumpetType={trumpetType}
+              controlBindings={controlBindings}
+              onBack={handleBackToSheetSelect}
+              onComplete={handleRhythmComplete}
+              onAudioIssue={pushNotice}
+            />
+          </div>
+        )}
+      </div>
+    </NomenclatureContext.Provider>
   );
 }
 

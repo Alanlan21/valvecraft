@@ -4,6 +4,7 @@ import type {
   Fingering,
   AnswerQuality,
   TrumpetType,
+  NoteNomenclature,
 } from "../types";
 import { allNotes, fingeringMap } from "../data/fingeringMap";
 import {
@@ -81,9 +82,40 @@ export function getEnharmonicNote(note: Note): Note | null {
   return enharmonicName ? buildNote(enharmonicName, note.octave) : null;
 }
 
-export function formatQuizNoteLabel(note: Note): string {
+export function formatQuizNoteLabel(
+  note: Note,
+  nomenclature: NoteNomenclature = "anglo",
+): string {
   const enharmonic = getEnharmonicNote(note);
-  return enharmonic ? `${note.name} / ${enharmonic.name}` : note.name;
+  const name = toDisplayName(note.name, nomenclature);
+  if (!enharmonic) return name;
+  return `${name} / ${toDisplayName(enharmonic.name, nomenclature)}`;
+}
+
+/** Latin (solfège) names for the 7 natural notes. */
+const LATIN_NAMES: Record<string, string> = {
+  C: "Dó",
+  D: "Ré",
+  E: "Mi",
+  F: "Fá",
+  G: "Sol",
+  A: "Lá",
+  B: "Si",
+};
+
+/**
+ * Convert an Anglo note name (e.g. "C#", "Bb", "G") to the chosen nomenclature.
+ * When nomenclature is "anglo" it returns the name unchanged.
+ * When "latin": C→Dó, D→Ré, E→Mi, F→Fá, G→Sol, A→Lá, B→Si; accidentals kept.
+ */
+export function toDisplayName(
+  angleName: string,
+  nomenclature: NoteNomenclature,
+): string {
+  if (nomenclature === "anglo") return angleName;
+  const base = angleName[0]; // C, D, E, F, G, A, B
+  const suffix = angleName.slice(1); // "", "#", "b", "##" …
+  return (LATIN_NAMES[base] ?? base) + suffix;
 }
 
 const SEMITONES_BY_NOTE: Record<string, number> = {

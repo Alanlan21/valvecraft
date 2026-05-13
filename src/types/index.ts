@@ -22,6 +22,8 @@ export type RangeLevel = "beginner" | "intermediate" | "advanced" | "extreme";
 export type NoteType = "natural" | "accidental";
 export type TrumpetType = "Bb" | "C";
 export type AudioMode = "mono" | "off";
+/** Note naming convention shown to the user. */
+export type NoteNomenclature = "anglo" | "latin";
 export type ControlAction = "valve1" | "valve2" | "valve3" | "slide" | "submit";
 export type QuizMode = "challenge" | "training";
 

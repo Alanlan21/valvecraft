@@ -6,8 +6,9 @@ import type {
   RangeLevel,
   TrumpetType,
 } from "../types";
-import { getNotesForMode } from "../utils/noteUtils";
+import { getNotesForMode, toDisplayName } from "../utils/noteUtils";
 import { HelpModal, HelpSection, HelpItem } from "./HelpModal";
+import { useNomenclature } from "../contexts/NomenclatureContext";
 
 interface QuizSetupScreenProps {
   trumpetType: TrumpetType;
@@ -87,6 +88,7 @@ export function QuizSetupScreen({
     [noteType, quizMode, rangeLevel, trumpetType],
   );
   const previewNotes = getNotesForMode(mode);
+  const nomenclature = useNomenclature();
 
   return (
     <div className="flex w-full max-w-4xl flex-col gap-6">
@@ -267,7 +269,8 @@ export function QuizSetupScreen({
                 key={note.id}
                 className="rounded bg-[#1a1a2e] px-2 py-1 text-xs font-mono text-[#fffff0]/70"
               >
-                {note.id}
+                {toDisplayName(note.name, nomenclature)}
+                {note.octave}
               </span>
             ))}
           </div>
