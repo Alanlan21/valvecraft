@@ -162,7 +162,7 @@ export function GameScreen({
   }, [onExit]);
 
   return (
-    <div className="relative flex min-h-screen select-none flex-col items-center gap-6 px-4 py-6">
+    <div className="relative flex min-h-screen select-none flex-col items-center gap-3 px-4 py-3 sm:gap-6 sm:py-6">
       {/* Top bar: score + exit */}
       <div className="flex w-full max-w-3xl items-center justify-between gap-4">
         <ScoreBoard
@@ -194,14 +194,16 @@ export function GameScreen({
       {/* Staff display — shown in sync with audio */}
       <StaffDisplay note={displayNote} trumpetType={mode.trumpetType} />
 
-      {/* Valve indicator */}
-      <div className="mt-4">
-        <ValveIndicator
-          controlBindings={controlBindings}
-          currentInput={currentInput}
-          hideSlide={isTouchDevice}
-        />
-      </div>
+      {/* Valve indicator — hidden on touch (TouchValveControls already shows pressed state) */}
+      {!isTouchDevice && (
+        <div className="sm:mt-4">
+          <ValveIndicator
+            controlBindings={controlBindings}
+            currentInput={currentInput}
+            hideSlide={false}
+          />
+        </div>
+      )}
 
       {/* "Ver dedilhado" hint — appears after 2+ errors on the same note */}
       {(mode.quizMode === "training" || currentNoteErrors >= 2) &&
@@ -230,7 +232,7 @@ export function GameScreen({
 
       {/* Touch controls — shown on touch devices */}
       {isTouchDevice && (
-        <div className="mt-2">
+        <div>
           <TouchValveControls
             currentInput={currentInput}
             onValveChange={setValve}

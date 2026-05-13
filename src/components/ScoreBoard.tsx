@@ -32,21 +32,21 @@ export function ScoreBoard({
   const danger = !trainingMode && timeLeftMs <= 10_000;
 
   return (
-    <div className="flex flex-col gap-2 rounded-xl bg-[#16213e] px-4 py-3 shadow-lg shadow-black/20">
-      <div className="flex flex-wrap items-center justify-center gap-4">
+    <div className="flex flex-col gap-1.5 rounded-xl bg-[#16213e] px-3 py-2 shadow-lg shadow-black/20 sm:px-4 sm:py-3">
+      <div className="flex items-center justify-center gap-3 sm:gap-4">
         {/* Timer */}
         <div
-          className={`flex min-w-20 flex-col items-center rounded-lg border px-3 py-2 ${
+          className={`flex min-w-14 flex-col items-center rounded-lg border px-2 py-1.5 sm:min-w-20 sm:px-3 sm:py-2 ${
             danger
               ? "border-red-400/60 bg-red-500/10"
               : "border-[#cd7f32]/20 bg-[#1a1a2e]/50"
           }`}
         >
-          <span className="text-xs font-semibold uppercase tracking-wider text-[#cd7f32]/60">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#cd7f32]/60 sm:text-xs">
             {trainingMode ? "Modo" : "Tempo"}
           </span>
           <span
-            className={`text-3xl font-black tabular-nums ${
+            className={`text-xl font-black tabular-nums sm:text-3xl ${
               danger ? "text-red-400" : "text-[#d4a853]"
             }`}
           >
@@ -58,25 +58,25 @@ export function ScoreBoard({
         {!trainingMode && (
           <>
             <div className="flex flex-col items-center">
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#cd7f32]/60">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#cd7f32]/60 sm:text-xs">
                 Score
               </span>
-              <span className="text-2xl font-black tabular-nums text-[#d4a853]">
+              <span className="text-lg font-black tabular-nums text-[#d4a853] sm:text-2xl">
                 {score.toLocaleString()}
               </span>
             </div>
 
-            <div className="h-10 w-px bg-[#cd7f32]/20" />
+            <div className="h-8 w-px bg-[#cd7f32]/20 sm:h-10" />
           </>
         )}
 
         {/* Streak */}
         <div className="flex flex-col items-center">
-          <span className="text-xs font-semibold uppercase tracking-wider text-[#cd7f32]/60">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#cd7f32]/60 sm:text-xs">
             Streak
           </span>
           <span
-            className={`text-2xl font-black tabular-nums ${
+            className={`text-lg font-black tabular-nums sm:text-2xl ${
               streak >= 15
                 ? "text-red-300"
                 : streak >= 5
@@ -90,10 +90,9 @@ export function ScoreBoard({
           </span>
         </div>
 
-        <div className="h-10 w-px bg-[#cd7f32]/20" />
-
-        {/* Best Streak */}
-        <div className="flex flex-col items-center">
+        {/* Best Streak — hidden on mobile */}
+        <div className="hidden h-10 w-px bg-[#cd7f32]/20 sm:block" />
+        <div className="hidden flex-col items-center sm:flex">
           <span className="text-xs font-semibold uppercase tracking-wider text-[#cd7f32]/60">
             Melhor
           </span>
@@ -102,10 +101,9 @@ export function ScoreBoard({
           </span>
         </div>
 
-        <div className="h-10 w-px bg-[#cd7f32]/20" />
-
-        {/* Accuracy */}
-        <div className="flex flex-col items-center">
+        {/* Accuracy — hidden on mobile */}
+        <div className="hidden h-10 w-px bg-[#cd7f32]/20 sm:block" />
+        <div className="hidden flex-col items-center sm:flex">
           <span className="text-xs font-semibold uppercase tracking-wider text-[#cd7f32]/60">
             Acertos
           </span>
