@@ -14,6 +14,7 @@ import {
   isReservedControlCode,
 } from "../utils/controlBindings";
 import { useTouchDevice } from "../hooks/useTouchDevice";
+import { HelpModal, HelpSection, HelpItem } from "./HelpModal";
 
 interface ModeSelectorProps {
   audioMode: AudioMode;
@@ -68,7 +69,9 @@ export function ModeSelector({
   onRhythmMode,
   onNoteReadingMode,
 }: ModeSelectorProps) {
-  const [activePanel, setActivePanel] = useState<SettingsPanel | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
+  const [activePanel, setActivePanel] = useState<SettingsPanel>("trumpet");
   const [listeningAction, setListeningAction] = useState<ControlAction | null>(
     null,
   );
@@ -78,38 +81,17 @@ export function ModeSelector({
   const selectedTrumpet = TRUMPET_OPTIONS.find(
     (opt) => opt.value === trumpetType,
   )!;
-  const settingButtons: {
-    panel: SettingsPanel;
-    label: string;
-    value: string;
-  }[] = [
-    {
-      panel: "trumpet",
-      label: "Afinação",
-      value: selectedTrumpet.shortLabel,
-    },
-    {
-      panel: "controls",
-      label: "Controles",
-      value: `${controlBindings.valve1.label}/${controlBindings.valve2.label}/${controlBindings.valve3.label}`,
-    },
-    {
-      panel: "nomenclature",
-      label: "Notas",
-      value: nomenclature === "anglo" ? "C D E (Anglo)" : "Dó Ré Mi (Latino)",
-    },
-  ];
 
-  function togglePanel(panel: SettingsPanel) {
-    setActivePanel((current) => {
-      const next = current === panel ? null : panel;
+  function toggleSettings() {
+    setShowSettings((v) => !v);
+    setListeningAction(null);
+  }
 
-      if (next !== "controls") {
-        setListeningAction(null);
-      }
-
-      return next;
-    });
+  function selectTab(panel: SettingsPanel) {
+    setActivePanel(panel);
+    if (panel !== "controls") {
+      setListeningAction(null);
+    }
   }
 
   function beginControlCapture(action: ControlAction) {
@@ -176,26 +158,57 @@ export function ModeSelector({
   }
 
   return (
-    <div className="flex w-full max-w-lg flex-col items-center gap-6 rounded-2xl border border-white/[0.07] bg-[#16213e]/70 px-8 py-10 shadow-2xl shadow-black/60 backdrop-blur-md">
-      {/* Title */}
-      <div className="text-center">
-        <div className="mb-2 select-none text-4xl">🎺</div>
-        <h1 className="text-gradient-gold mb-2 text-5xl font-black tracking-tight">
-          Valvecraft
-        </h1>
-        <p className="text-sm text-[#fffff0]/50">
-          Treine dedilhado, leitura e tempo no trompete
-        </p>
+    <div className="flex w-full max-w-lg flex-col items-center gap-8 rounded-2xl border border-white/[0.07] bg-[#16213e]/70 px-8 py-10 shadow-2xl shadow-black/60 backdrop-blur-md">
+      {/* Header: title + action icons */}
+      <div className="flex w-full items-center justify-between gap-2">
+        <div className="flex items-center gap-4">
+          <span className="select-none text-4xl">🎺</span>
+          <div>
+            <h1 className="text-gradient-gold text-4xl font-black leading-none tracking-tight">
+              Valvecraft
+            </h1>
+            <p className="mt-1 text-sm text-[#fffff0]/40">
+              Treine dedilhado, leitura e tempo
+            </p>
+          </div>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          {/* Help */}
+          <button
+            type="button"
+            onClick={() => setShowHelp(true)}
+            aria-label="Como jogar"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-[#fffff0]/20 text-[#fffff0]/50 transition-all hover:border-[#fffff0]/40 hover:text-[#fffff0]/80 active:scale-95"
+          >
+            <span className="text-base font-bold leading-none">?</span>
+          </button>
+          {/* Settings */}
+          <button
+            type="button"
+            onClick={toggleSettings}
+            aria-label="Configurações"
+            className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all active:scale-95 ${
+              showSettings
+                ? "border-[#d4a853] bg-[#d4a853]/15 text-[#d4a853]"
+                : "border-[#d4a853]/50 bg-[#d4a853]/5 text-[#d4a853] hover:border-[#d4a853]/80 hover:bg-[#d4a853]/10"
+            }`}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+          </button>
+        </div>
       </div>
 
-      {/* Quick start */}
-      <div className="flex w-full flex-col items-center gap-3">
-        <div className="flex w-full gap-3">
+      {/* Mode buttons */}
+      <div className="flex w-full flex-col gap-4">
+        <div className="flex w-full gap-4">
           <button
             onClick={onQuizMode}
-            className="flex flex-1 flex-col items-center gap-1.5 rounded-xl bg-linear-to-br from-[#d4a853] to-[#a86d20] px-4 py-5 text-[#1a1a2e] shadow-lg shadow-[#d4a853]/25 transition-all hover:-translate-y-0.5 hover:shadow-[#d4a853]/45 active:translate-y-0 active:scale-[0.98]"
+            className="flex flex-1 flex-col items-center gap-2 rounded-xl bg-linear-to-br from-[#d4a853] to-[#a86d20] px-5 py-7 text-[#1a1a2e] shadow-lg shadow-[#d4a853]/25 transition-all hover:-translate-y-0.5 hover:shadow-[#d4a853]/45 active:translate-y-0 active:scale-[0.98]"
           >
-            <span className="text-2xl select-none">🎵</span>
+            <span className="select-none text-3xl">🎵</span>
             <span className="text-base font-black uppercase tracking-wider">
               Modo Quiz
             </span>
@@ -206,9 +219,9 @@ export function ModeSelector({
 
           <button
             onClick={onRhythmMode}
-            className="flex flex-1 flex-col items-center gap-1.5 rounded-xl bg-linear-to-br from-emerald-500 to-emerald-700 px-4 py-5 text-white shadow-lg shadow-emerald-700/30 transition-all hover:-translate-y-0.5 hover:shadow-emerald-500/45 active:translate-y-0 active:scale-[0.98]"
+            className="flex flex-1 flex-col items-center gap-2 rounded-xl bg-linear-to-br from-emerald-500 to-emerald-700 px-5 py-7 text-white shadow-lg shadow-emerald-700/30 transition-all hover:-translate-y-0.5 hover:shadow-emerald-500/45 active:translate-y-0 active:scale-[0.98]"
           >
-            <span className="text-2xl select-none">🎼</span>
+            <span className="select-none text-3xl">🎼</span>
             <span className="text-base font-black uppercase tracking-wider">
               Modo Ritmo
             </span>
@@ -218,12 +231,11 @@ export function ModeSelector({
           </button>
         </div>
 
-        {/* Note Reading — learning mode, no fingerings needed */}
         <button
           onClick={onNoteReadingMode}
-          className="flex w-full items-center gap-3 rounded-xl border border-violet-500/30 bg-violet-900/20 px-4 py-3 text-left text-violet-300 transition-all hover:-translate-y-0.5 hover:border-violet-400/50 hover:bg-violet-900/30 active:translate-y-0 active:scale-[0.98]"
+          className="flex w-full items-center gap-4 rounded-xl border border-violet-500/30 bg-violet-900/20 px-5 py-4 text-left text-violet-300 transition-all hover:-translate-y-0.5 hover:border-violet-400/50 hover:bg-violet-900/30 active:translate-y-0 active:scale-[0.98]"
         >
-          <span className="select-none text-2xl">📖</span>
+          <span className="select-none text-3xl">📖</span>
           <div className="flex-1">
             <div className="text-sm font-black uppercase tracking-wide">
               Leitura de Notas
@@ -235,169 +247,150 @@ export function ModeSelector({
           <span className="text-xs opacity-40">→</span>
         </button>
 
-        <p className="text-center text-xs text-[#fffff0]/35">
-          Escolha um modo para começar. Afinação ativa:{" "}
-          {selectedTrumpet.shortLabel}.
-        </p>
+        {!showSettings && (
+          <p className="text-center text-xs text-[#fffff0]/35">
+            Ajuste o instrumento{" "}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline h-3 w-3 align-middle text-[#d4a853]/70">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>{" "}
+            antes de jogar
+          </p>
+        )}
       </div>
 
-      {/* Settings categories */}
-      <div className="grid w-full grid-cols-2 gap-2 sm:grid-cols-3">
-        {settingButtons
-          .filter((item) => !(isTouchDevice && item.panel === "controls"))
-          .map((item) => {
-            const selected = activePanel === item.panel;
-
-            return (
+      {/* Settings panel */}
+      {showSettings && (
+        <div className="w-full overflow-hidden rounded-xl border border-[#cd7f32]/20 bg-[#16213e]">
+          {/* Tab bar */}
+          <div className="flex border-b border-[#cd7f32]/15">
+            {(
+              [
+                { panel: "trumpet" as SettingsPanel, label: "Afinação" },
+                ...(!isTouchDevice
+                  ? [{ panel: "controls" as SettingsPanel, label: "Controles" }]
+                  : []),
+                { panel: "nomenclature" as SettingsPanel, label: "Notas" },
+              ] as { panel: SettingsPanel; label: string }[]
+            ).map((tab) => (
               <button
-                key={item.panel}
+                key={tab.panel}
                 type="button"
-                onClick={() => togglePanel(item.panel)}
-                className={`
-                rounded-lg border-2 px-3 py-3 text-left transition-all
-                ${
-                  selected
-                    ? "border-[#d4a853] bg-[#d4a853]/10 text-[#d4a853]"
-                    : "border-[#cd7f32]/20 bg-[#16213e] text-[#fffff0]/60 hover:border-[#cd7f32]/40"
-                }
-              `}
+                onClick={() => selectTab(tab.panel)}
+                className={`flex-1 border-b-2 px-3 py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
+                  activePanel === tab.panel
+                    ? "border-[#d4a853] text-[#d4a853]"
+                    : "border-transparent text-[#fffff0]/40 hover:text-[#fffff0]/70"
+                }`}
               >
-                <div className="text-xs font-semibold uppercase tracking-wider opacity-60">
-                  {item.label}
-                </div>
-                <div className="mt-1 truncate text-sm font-bold">
-                  {item.value}
-                </div>
+                {tab.label}
               </button>
-            );
-          })}
-      </div>
+            ))}
+          </div>
 
-      {activePanel && (
-        <div className="w-full rounded-lg border border-[#cd7f32]/20 bg-[#16213e] p-4">
-          {activePanel === "trumpet" && (
-            <div>
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#cd7f32]">
-                Afinação do Trompete
-              </h2>
+          {/* Panel content */}
+          <div className="p-4">
+            {activePanel === "trumpet" && (
               <div className="grid grid-cols-2 gap-2">
                 {TRUMPET_OPTIONS.map((opt) => (
                   <button
                     key={opt.value}
                     onClick={() => onTrumpetTypeChange(opt.value)}
-                    className={`
-                      rounded-lg border-2 px-3 py-3 text-left transition-all
-                      ${
-                        trumpetType === opt.value
-                          ? "border-[#d4a853] bg-[#d4a853]/10 text-[#d4a853]"
-                          : "border-[#cd7f32]/20 bg-[#1a1a2e] text-[#fffff0]/60 hover:border-[#cd7f32]/40"
-                      }
-                    `}
+                    className={`rounded-lg border-2 px-3 py-3 text-left transition-all ${
+                      trumpetType === opt.value
+                        ? "border-[#d4a853] bg-[#d4a853]/10 text-[#d4a853]"
+                        : "border-[#cd7f32]/20 bg-[#1a1a2e] text-[#fffff0]/60 hover:border-[#cd7f32]/40"
+                    }`}
                   >
                     <div className="text-sm font-bold">{opt.label}</div>
                     <div className="mt-1 text-xs opacity-60">{opt.desc}</div>
                   </button>
                 ))}
               </div>
-            </div>
-          )}
+            )}
 
-          {activePanel === "controls" && (
-            <div>
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-[#cd7f32]">
-                  Controles
-                </h2>
+            {activePanel === "controls" && (
+              <div>
                 {!isTouchDevice && (
-                  <button
-                    type="button"
-                    onClick={handleControlBindingsReset}
-                    className="rounded border border-[#cd7f32]/30 px-2 py-1 text-xs text-[#cd7f32]/70 transition-colors hover:border-[#cd7f32]/60 hover:text-[#cd7f32]"
-                  >
-                    Restaurar padrão
-                  </button>
-                )}
-              </div>
-
-              <div className="mb-4 rounded-md bg-[#1a1a2e]/70 p-3">
-                <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#cd7f32]/60">
-                  Som
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { value: "mono" as AudioMode, label: "Mono curto" },
-                    { value: "off" as AudioMode, label: "Sem som" },
-                  ].map((opt) => (
+                  <div className="mb-3 flex justify-end">
                     <button
-                      key={opt.value}
                       type="button"
-                      onClick={() => handleAudioModeChange(opt.value)}
-                      className={`
-                        rounded border px-3 py-2 text-sm font-semibold transition-colors
-                        ${
+                      onClick={handleControlBindingsReset}
+                      className="rounded border border-[#cd7f32]/30 px-2 py-1 text-xs text-[#cd7f32]/70 transition-colors hover:border-[#cd7f32]/60 hover:text-[#cd7f32]"
+                    >
+                      Restaurar padrão
+                    </button>
+                  </div>
+                )}
+
+                <div className="mb-4 rounded-md bg-[#1a1a2e]/70 p-3">
+                  <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#cd7f32]/60">
+                    Som
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { value: "mono" as AudioMode, label: "Mono curto" },
+                      { value: "off" as AudioMode, label: "Sem som" },
+                    ].map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => handleAudioModeChange(opt.value)}
+                        className={`rounded border px-3 py-2 text-sm font-semibold transition-colors ${
                           audioMode === opt.value
                             ? "border-[#d4a853] bg-[#d4a853]/10 text-[#d4a853]"
                             : "border-[#cd7f32]/20 bg-[#16213e] text-[#fffff0]/60 hover:border-[#cd7f32]/40"
-                        }
-                      `}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {!isTouchDevice && (
-                <div className="grid grid-cols-1 gap-2 text-sm text-[#fffff0]/60 sm:grid-cols-2">
-                  {CONTROL_ACTIONS.map((action) => {
-                    const active = listeningAction === action;
-
-                    return (
-                      <div
-                        key={action}
-                        className="flex items-center justify-between gap-3 rounded-md bg-[#1a1a2e]/70 px-3 py-2"
+                        }`}
                       >
-                        <span>{CONTROL_ACTION_LABELS[action]}</span>
-                        <button
-                          type="button"
-                          aria-label={`Alterar tecla para ${CONTROL_ACTION_LABELS[action]}`}
-                          onBlur={() => handleControlBlur(action)}
-                          onClick={() => beginControlCapture(action)}
-                          onKeyDown={(event) =>
-                            handleControlKeyDown(action, event)
-                          }
-                          className={`
-                          min-w-24 rounded border px-2 py-1 text-center font-mono text-xs transition-colors
-                          ${
-                            active
-                              ? "border-[#d4a853] bg-[#d4a853]/10 text-[#d4a853]"
-                              : "border-[#cd7f32]/30 bg-[#16213e] text-[#d4a853]"
-                          }
-                        `}
-                        >
-                          {active
-                            ? "Pressione..."
-                            : controlBindings[action].label}
-                        </button>
-                      </div>
-                    );
-                  })}
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              )}
 
-              {controlMessage && (
-                <p className="mt-3 text-xs text-[#fffff0]/40">
-                  {controlMessage}
-                </p>
-              )}
-            </div>
-          )}
+                {!isTouchDevice && (
+                  <div className="grid grid-cols-1 gap-2 text-sm text-[#fffff0]/60 sm:grid-cols-2">
+                    {CONTROL_ACTIONS.map((action) => {
+                      const active = listeningAction === action;
+                      return (
+                        <div
+                          key={action}
+                          className="flex items-center justify-between gap-3 rounded-md bg-[#1a1a2e]/70 px-3 py-2"
+                        >
+                          <span>{CONTROL_ACTION_LABELS[action]}</span>
+                          <button
+                            type="button"
+                            aria-label={`Alterar tecla para ${CONTROL_ACTION_LABELS[action]}`}
+                            onBlur={() => handleControlBlur(action)}
+                            onClick={() => beginControlCapture(action)}
+                            onKeyDown={(event) =>
+                              handleControlKeyDown(action, event)
+                            }
+                            className={`min-w-24 rounded border px-2 py-1 text-center font-mono text-xs transition-colors ${
+                              active
+                                ? "border-[#d4a853] bg-[#d4a853]/10 text-[#d4a853]"
+                                : "border-[#cd7f32]/30 bg-[#16213e] text-[#d4a853]"
+                            }`}
+                          >
+                            {active
+                              ? "Pressione..."
+                              : controlBindings[action].label}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
 
-          {activePanel === "nomenclature" && (
-            <div>
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[#cd7f32]">
-                Nomenclatura das Notas
-              </h2>
+                {controlMessage && (
+                  <p className="mt-3 text-xs text-[#fffff0]/40">
+                    {controlMessage}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {activePanel === "nomenclature" && (
               <div className="grid grid-cols-2 gap-2">
                 {(
                   [
@@ -416,14 +409,11 @@ export function ModeSelector({
                   <button
                     key={opt.value}
                     onClick={() => onNomenclatureChange(opt.value)}
-                    className={`
-                      rounded-lg border-2 px-3 py-3 text-left transition-all
-                      ${
-                        nomenclature === opt.value
-                          ? "border-[#d4a853] bg-[#d4a853]/10 text-[#d4a853]"
-                          : "border-[#cd7f32]/20 bg-[#1a1a2e] text-[#fffff0]/60 hover:border-[#cd7f32]/40"
-                      }
-                    `}
+                    className={`rounded-lg border-2 px-3 py-3 text-left transition-all ${
+                      nomenclature === opt.value
+                        ? "border-[#d4a853] bg-[#d4a853]/10 text-[#d4a853]"
+                        : "border-[#cd7f32]/20 bg-[#1a1a2e] text-[#fffff0]/60 hover:border-[#cd7f32]/40"
+                    }`}
                   >
                     <div className="text-sm font-bold">{opt.label}</div>
                     <div className="mt-1 font-mono text-xs opacity-60">
@@ -432,9 +422,56 @@ export function ModeSelector({
                   </button>
                 ))}
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
+      )}
+
+      {/* Help modal */}
+      {showHelp && (
+        <HelpModal
+          title="Como usar o Valvecraft"
+          onClose={() => setShowHelp(false)}
+        >
+          <HelpSection title="Modo Quiz 🎵">
+            <HelpItem>
+              Veja a nota na pauta e pressione as válvulas corretas do trompete.
+            </HelpItem>
+            <HelpItem>
+              Configure faixa de notas e afinação antes de começar.
+            </HelpItem>
+            <HelpItem>
+              No celular, toque nos botões de válvula na tela.
+            </HelpItem>
+          </HelpSection>
+          <HelpSection title="Modo Ritmo 🎼">
+            <HelpItem>
+              Leia uma partitura completa e toque cada nota no tempo certo.
+            </HelpItem>
+            <HelpItem>
+              O resultado mostra sua precisão de tempo ao final.
+            </HelpItem>
+          </HelpSection>
+          <HelpSection title="Leitura de Notas 📖">
+            <HelpItem>
+              Veja a nota na pauta e escolha o nome correto entre as opções.
+            </HelpItem>
+            <HelpItem>
+              Ideal para iniciantes aprenderem a identificar notas sem trompete.
+            </HelpItem>
+          </HelpSection>
+          <HelpSection title="Configurações ⚙">
+            <HelpItem>
+              Afinação — escolha Sib (padrão) ou Dó conforme seu instrumento.
+            </HelpItem>
+            <HelpItem>
+              Notas — alterne entre Anglo (C D E) e Latino (Dó Ré Mi).
+            </HelpItem>
+            <HelpItem>
+              Controles — personalize as teclas das 3 válvulas (desktop).
+            </HelpItem>
+          </HelpSection>
+        </HelpModal>
       )}
     </div>
   );
