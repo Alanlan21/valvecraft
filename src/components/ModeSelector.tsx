@@ -78,10 +78,6 @@ export function ModeSelector({
   const [controlMessage, setControlMessage] = useState<string | null>(null);
   const isTouchDevice = useTouchDevice();
 
-  const selectedTrumpet = TRUMPET_OPTIONS.find(
-    (opt) => opt.value === trumpetType,
-  )!;
-
   function toggleSettings() {
     setShowSettings((v) => !v);
     setListeningAction(null);

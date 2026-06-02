@@ -87,6 +87,7 @@ export function NoteReadingScreen({
       noteType: "natural",
       trumpetType,
       quizMode: "training",
+      showNoteName: false,
     });
     notePoolRef.current = pool;
     setScore(0);

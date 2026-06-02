@@ -81,11 +81,12 @@ export function QuizSetupScreen({
   const [rangeLevel, setRangeLevel] = useState<RangeLevel>("beginner");
   const [noteType, setNoteType] = useState<NoteType>("natural");
   const [quizMode, setQuizMode] = useState<QuizMode>("challenge");
+  const [showNoteName, setShowNoteName] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
 
   const mode = useMemo<GameMode>(
-    () => ({ rangeLevel, noteType, trumpetType, quizMode }),
-    [noteType, quizMode, rangeLevel, trumpetType],
+    () => ({ rangeLevel, noteType, trumpetType, quizMode, showNoteName }),
+    [noteType, quizMode, rangeLevel, trumpetType, showNoteName],
   );
   const previewNotes = getNotesForMode(mode);
   const nomenclature = useNomenclature();
@@ -198,6 +199,33 @@ export function QuizSetupScreen({
               </button>
             ))}
           </div>
+          <button
+            type="button"
+            onClick={() => setShowNoteName((v) => !v)}
+            className={`mt-3 flex w-full items-center justify-between rounded-lg border-2 px-3 py-2.5 text-left transition-all ${
+              showNoteName
+                ? "border-[#d4a853] bg-[#d4a853]/10 text-[#d4a853]"
+                : "border-[#cd7f32]/20 bg-[#1a1a2e] text-[#fffff0]/60 hover:border-[#cd7f32]/40"
+            }`}
+          >
+            <div>
+              <div className="text-sm font-bold">Mostrar nome da nota</div>
+              <div className="mt-0.5 text-xs opacity-60">
+                Exibe o nome acima da pauta
+              </div>
+            </div>
+            <div
+              className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${
+                showNoteName ? "bg-[#d4a853]" : "bg-[#fffff0]/20"
+              }`}
+            >
+              <div
+                className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${
+                  showNoteName ? "translate-x-4" : "translate-x-0.5"
+                }`}
+              />
+            </div>
+          </button>
         </div>
 
         <div className="order-3 rounded-xl border border-[#cd7f32]/20 bg-[#16213e] p-4 md:col-span-2">
