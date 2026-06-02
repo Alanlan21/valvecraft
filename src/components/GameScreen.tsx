@@ -192,7 +192,11 @@ export function GameScreen({
       )}
 
       {/* Staff display — shown in sync with audio */}
-      <StaffDisplay note={displayNote} trumpetType={mode.trumpetType} />
+      <StaffDisplay
+        note={displayNote}
+        trumpetType={mode.trumpetType}
+        hideLabel={!mode.showNoteName}
+      />
 
       {/* Valve indicator — hidden on touch (TouchValveControls already shows pressed state) */}
       {!isTouchDevice && (

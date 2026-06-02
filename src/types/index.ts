@@ -39,6 +39,7 @@ export interface GameMode {
   noteType: NoteType;
   trumpetType: TrumpetType;
   quizMode: QuizMode;
+  showNoteName: boolean;
 }
 
 /** Quality band assigned to a correct answer based on response time. */
